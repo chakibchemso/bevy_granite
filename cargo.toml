@@ -1,0 +1,44 @@
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.dependencies]
+bevy = { version = "0.14.0", default-features = false }
+bevy-inspector-egui = "0.25.2"
+bevy_obj = "0.14.0"
+bevy_egui = "0.28"
+toml = "0.8.22"
+uuid = "1.17.0"
+serde = "1.0.215"
+native-dialog = "0.7.0"
+ron = "0.8.1"
+lazy_static = "1.5.0"
+
+[package]
+name = "bevy_granite"
+version = "0.1.0"
+edition = "2021"
+description = "A 3d editor for the Bevy game engine."
+
+[features]
+default = ["core", "editor", "gizmos"]
+core = ["bevy_granite_core", "bevy_granite_logging", "bevy_granite_macros"]
+editor = ["core", "gizmos", "bevy_granite_editor"]
+gizmos = ["core", "bevy_granite_gizmos"]
+
+[dependencies]
+bevy = { workspace = true }
+bevy-inspector-egui = { workspace = true }
+bevy_obj = { workspace = true }
+
+bevy_granite_core = { path = "crates/bevy_granite_core", optional = true }
+bevy_granite_editor = { path = "crates/bevy_granite_editor", optional = true }
+bevy_granite_gizmos = { path = "crates/bevy_granite_gizmos", optional = true }
+bevy_granite_logging = { path = "crates/bevy_granite_logging", optional = true }
+bevy_granite_macros = { path = "crates/bevy_granite_macros", optional = true }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

@@ -1,0 +1,26 @@
+[ package]
+name = "bevy_granite_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+toml = { workspace = true }
+bevy = { workspace = true }
+bevy-inspector-egui = { workspace = true }
+bevy_egui = { workspace = true }
+bevy_obj = { workspace = true }
+uuid = { workspace = true }
+serde = { workspace =  true}
+native-dialog = { workspace = true }
+ron = { workspace = true }
+lazy_static = { workspace = true }
+
+bevy_granite_logging = { path = "../bevy_granite_logging"}
+bevy_granite_macros = { path = "../bevy_granite_macros"}
+
+enum_dispatch = "0.3.13"
+
+
+[lib]
+name = "bevy_granite_core"
+path = "src/lib.rs"

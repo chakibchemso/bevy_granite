@@ -1,0 +1,5 @@
+[scene_format]
+# Current version of the file we use to serialize/deserialize our scene data from
+current_version = "0.1.4" 
+# Minimum support for scene data file
+minimum_supported_version = "0.1.4"

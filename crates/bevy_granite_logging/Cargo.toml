@@ -1,0 +1,17 @@
+[package]
+name = "bevy_granite_logging"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+lazy_static = { workspace = true }
+chrono = "0.4.39"
+colored = "3.0.0"
+dirs = "6.0.0"
+textwrap = "0.16.1"
+
+
+[lib]
+name = "bevy_granite_logging"
+path = "src/lib.rs"

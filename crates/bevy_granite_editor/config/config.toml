@@ -1,0 +1,95 @@
+[input]
+# fps is right click held movement like Unreal
+fps_camera_speed = 15.0
+fps_camera_sensitivity = 0.17
+# Pan is shift and middle mouse button
+pan_camera_sensitivity = 0.7
+# orbit is middle mouse
+orbit_camera_sensitivity = 0.4
+# Zoom is mouse scroll wheel 
+zoom_camera_sensitivity = 1.25
+
+[ui]
+# Normal spacing between elements
+spacing = 4.0
+# When we want tight groups/elements
+small_spacing = 1.0
+# Generally between large or ver different UI elements
+large_spacing = 6.0
+
+[popup_help_text]
+# Header of help popup
+header = "Granite Editor Help"
+
+# Main text of help popup
+body = """
+
+Welcome! If this is your first time using the editor follow these steps to get a basic scene started.
+
+Step 1. "Shift - A" and select Camera 3D
+Step 2. In the side panel find the "Entities" tab and select it
+Step 3. Inside the "Entities" tab find the newly created Camera entity from the list and select it
+Step 4. Navigate to the "Camera 3D Data" section and select "Is active"
+Step 5. Just below that section find the "Components..." dropdown
+Step 6. Find "MainCamera" in the dropdown menu and select it via one of two ways:
+    - Select the sub category "bevy_granite_core::entities"
+    - Search using the top input bar
+Step 7. With the MainCamera attached to a Camera entity, you can move around your scene in 3d
+Step 8. Add entities via "Shift - A" and attach any components you build in code that are tagged 
+    with #[granite_component]
+Step 9. Play around in the "Settings" tab and re-arrange your dock layout
+
+---
+
+Camera Controls:
+• Middle Mouse Button - Rotate around fixed position
+• Middle Mouse Scroll - Zoom in/out
+• Shift + Middle Mouse Button - Pan camera left/right
+• Right Mouse Button - Enter free rotate mode
+• Right Mouse + W/A/S/D - Free move camera
+• Right Mouse + Scroll - Change camera speed
+• F - Frame selection
+
+Selection:
+• Left Mouse Button - Select entity
+• Shift + Left Mouse Button - Additive selection
+• U - Deselect all
+• Del - Delete entity
+
+Gizmos:
+• Q - Pointer gizmo
+• W - Move gizmo
+• E - Rotate gizmo
+• Shift + Drag (move/rotate) - Duplicate entity
+
+Tools:
+• Shift + A - Add entity popup
+• Shift + P - Relationship (parent) popup
+• F1 - Toggle editor on/off
+• F2 - Toggle main/editor camera Controls
+• H - Show this help menu
+• Ctrl + S - Save current world
+• Ctrl + O - Load new world
+• Ctrl + Z - Despawn world and load again (fake undo)
+
+---
+
+Tips:
+
+• You can import multiple OBJs at once!
+• Multi-object OBJ's aren't support yet, but if you batch export the meshes with a common origin point you can import and child them to an empty to create complex geo that way
+• If your OBJ was exported with the 'usemtl', a material with that same name will be loaded/created
+• You can drag and drop nodes inside the "Entities" panel to re-parent/re-child
+• You can multi-select inside the "Entities" panel
+
+
+"""
+
+# Text that shows above the youtube link
+youtube_text = "For more information about this project, check out the youtube playlist"
+
+# Text to render as clickable link
+youtube_link = """https://youtube.com/playlist?list=PLHLq51SU5w9ZuZPqiCoIZcBHKqFu6Ve0M&si=jtLSfwuRBYuzMLsh"""
+
+# TODO:
+# Add github repo link and issues tracker link

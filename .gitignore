@@ -1,0 +1,67 @@
+
+**/target/
+**/target/*
+**/dist/*
+**/*.rs.bk
+Cargo.lock
+
+# Linux-specific ignores
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Compiled files
+*.o
+*.so
+*.dll
+*.dylib
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# Logs
+*.log!
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Dependency directories
+/vendor/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Rust profiling files
+*.profraw
+
+
+# Build results
+/debug/
+/release/
+
+/.vs
+/.notes

@@ -1,0 +1,27 @@
+[package]
+name = "bevy_granite_editor"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+toml = { workspace = true }
+bevy-inspector-egui = { workspace = true }
+bevy_egui = { workspace = true }
+bevy_obj = { workspace = true }
+uuid = { workspace = true }
+serde = { workspace =  true}
+native-dialog = { workspace = true }
+ron = { workspace = true }
+lazy_static = { workspace = true }
+
+bevy_granite_gizmos = { path = "../bevy_granite_gizmos"}
+bevy_granite_core = { path = "../bevy_granite_core"}
+bevy_granite_logging = { path = "../bevy_granite_logging"}
+
+egui_dock = {version = "0.13", features = ["serde"]}
+webbrowser = "1.0.5"
+
+[lib]
+name = "bevy_granite_editor"
+path = "src/lib.rs"
