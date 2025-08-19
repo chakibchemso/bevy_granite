@@ -32,7 +32,7 @@ There are 3 optional feature sets.
 
 ## Example main.rs
 
-Check out the [examples](https://github.com/BlakeDarrow/bevy_granite/examples).
+Check out the [examples](https://github.com/BlakeDarrow/bevy_granite/tree/main/examples).
 
 ```rust
 // main.rs - bevy 0.14
