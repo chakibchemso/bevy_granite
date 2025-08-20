@@ -9,7 +9,7 @@ use super::{
 use crate::is_gizmos_active;
 use bevy::{
     app::{App, Plugin, PostUpdate, Update},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
     math::Vec3,
 };
 

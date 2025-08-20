@@ -1,8 +1,8 @@
 use crate::camera::{add_gizmo_camera, watch_for_main_camera_addition, MainCameraAdded};
 use bevy::app::{Plugin, Update};
-use bevy::ecs::schedule::IntoSystemConfigs;
+use bevy::ecs::schedule::IntoScheduleConfigs;
+use bevy::picking::mesh_picking::MeshPickingPlugin;
 use bevy::prelude::{App, Res, Resource};
-use bevy_mod_raycast::cursor::CursorRayPlugin;
 
 // Modules
 pub mod camera;
@@ -52,7 +52,7 @@ impl Plugin for BevyGraniteGizmos {
     fn build(&self, app: &mut App) {
         app
             // Plugins
-            .add_plugins(CursorRayPlugin) // Raycasting plugin
+            .add_plugins(MeshPickingPlugin) // Raycasting plugin
             //
             // internal
             .add_plugins(GizmoPlugin)

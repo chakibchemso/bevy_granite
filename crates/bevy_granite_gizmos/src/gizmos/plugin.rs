@@ -1,4 +1,4 @@
-use super::register_embedded_rotate_gizmo_mesh;
+// use super::register_embedded_rotate_gizmo_mesh;
 use super::{
     gizmo_changed_watcher, gizmo_events, handle_init_rotate_drag, handle_init_transform_drag,
     handle_rotate_dragging, handle_rotate_input, handle_rotate_reset, handle_transform_dragging,
@@ -10,7 +10,7 @@ use super::{
 use crate::is_gizmos_active;
 use bevy::{
     app::{App, Plugin, PostUpdate, Startup, Update},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
 };
 
 pub struct GizmoPlugin;

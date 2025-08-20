@@ -1,6 +1,5 @@
 use bevy::{
-    core::Name,
-    core_pipeline::core_3d::Camera3dBundle,
+    core_pipeline::core_3d::Camera3d,
     ecs::{
         component::Component,
         entity::Entity,
@@ -8,6 +7,7 @@ use bevy::{
         query::{Added, With, Without},
         system::{Commands, Query},
     },
+    prelude::Name,
     render::{camera::Camera, view::RenderLayers},
     transform::components::Transform,
 };
@@ -63,7 +63,7 @@ pub fn add_gizmo_camera(
             "MainCamera was added to an entity and it did not include GizmoCamera, so we will create one",
         );
 
-        if main_camera_query.is_empty() {
+        let Ok(main_camera_transform) = main_camera_query.single() else {
             log!(
                 LogType::Editor,
                 LogLevel::Warning,
@@ -71,15 +71,11 @@ pub fn add_gizmo_camera(
                 "Could not find MainCamera to spawn GizmoCamera at",
             );
             return;
-        }
-        let main_camera_transform = main_camera_query.single();
+        };
         let _ui_camera = commands
             .spawn((
-                Camera3dBundle {
-                    transform: *main_camera_transform,
-
-                    ..Default::default()
-                },
+                *main_camera_transform,
+                Camera3d::default(),
                 Name::new("Gizmo Camera"),
             ))
             .insert(Camera {

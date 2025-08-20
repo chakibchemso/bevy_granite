@@ -1,5 +1,6 @@
 use bevy::{
-    ecs::{component::Component, system::Resource},
+    ecs::component::Component,
+    ecs::resource::Resource,
     prelude::{
         Quat, ReflectComponent, ReflectDefault, ReflectDeserialize, ReflectFromReflect,
         ReflectSerialize, Vec3,

@@ -1,9 +1,9 @@
-use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
 use bevy::{
     prelude::*,
     reflect::{FromType, ReflectDeserialize, TypeRegistration},
 };
-use std::collections::HashMap;
+use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
+use std::{any::Any, collections::HashMap};
 
 // All structs defined by #[granite_component]
 // get this tag so we can easily filter in UI
@@ -23,14 +23,18 @@ pub fn is_bridge_component_check(registration: &TypeRegistration) -> bool {
 #[derive(Debug)]
 pub struct ReflectedComponent {
     pub type_name: String,
-    pub reflected_data: Box<dyn Reflect>,
+    pub reflected_data: Box<dyn PartialReflect>,
     pub type_registration: TypeRegistration,
 }
+
 impl Clone for ReflectedComponent {
     fn clone(&self) -> Self {
         Self {
             type_name: self.type_name.clone(),
-            reflected_data: self.reflected_data.clone_value(),
+            reflected_data: self
+                .reflected_data
+                .reflect_clone()
+                .expect("ReflectedComponent to be clonable"),
             type_registration: self.type_registration.clone(),
         }
     }
@@ -230,11 +234,18 @@ impl ComponentEditor {
                                                 registration.data::<ReflectComponent>()
                                             {
                                                 let mut entity_mut = world.entity_mut(entity);
-                                                reflect_component.apply_or_insert(
-                                                    &mut entity_mut,
-                                                    &*component_data,
-                                                    &type_registry.read(),
-                                                );
+                                                if entity_mut
+                                                    .contains_type_id(reflect_component.type_id())
+                                                {
+                                                    reflect_component
+                                                        .apply(&mut entity_mut, &*component_data);
+                                                } else {
+                                                    reflect_component.insert(
+                                                        &mut entity_mut,
+                                                        &*component_data,
+                                                        &type_registry.read(),
+                                                    );
+                                                }
                                                 log!(
                                                     LogType::Game,
                                                     LogLevel::Info,
@@ -315,11 +326,11 @@ impl ComponentEditor {
                 };
 
                 let mut entity_mut = world.entity_mut(entity);
-                reflect_component.apply_or_insert(
-                    &mut entity_mut,
-                    &*component,
-                    &type_registry.read(),
-                );
+                if entity_mut.contains_type_id(reflect_component.type_id()) {
+                    reflect_component.apply(&mut entity_mut, &*component);
+                } else {
+                    reflect_component.insert(&mut entity_mut, &*component, &type_registry.read());
+                }
                 log!(
                     LogType::Editor,
                     LogLevel::OK,
@@ -348,11 +359,15 @@ impl ComponentEditor {
         {
             if let Some(reflect_component) = registration.data::<ReflectComponent>() {
                 let mut entity_mut = world.entity_mut(entity);
-                reflect_component.apply_or_insert(
-                    &mut entity_mut,
-                    reflected_data,
-                    &type_registry.read(),
-                );
+                if entity_mut.contains_type_id(reflect_component.type_id()) {
+                    reflect_component.apply(&mut entity_mut, reflected_data);
+                } else {
+                    reflect_component.insert(
+                        &mut entity_mut,
+                        reflected_data,
+                        &type_registry.read(),
+                    );
+                }
                 log!(
                     LogType::Editor,
                     LogLevel::Info,

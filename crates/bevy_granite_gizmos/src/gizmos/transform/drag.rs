@@ -12,15 +12,14 @@ use crate::{
     GizmoCamera,
 };
 use bevy::prelude::{
-    Children, Entity, EventReader, EventWriter, Gizmos, GlobalTransform, Name, ParamSet, Parent,
+    ChildOf, Children, Entity, EventReader, EventWriter, Gizmos, GlobalTransform, Name, ParamSet,
     Query, Res, ResMut, Transform, Vec3, With, Without,
 };
-use bevy_granite_core::{mouse_to_world_delta, CursorWindowPos, UserInput, IconProxy};
+use bevy_granite_core::{mouse_to_world_delta, CursorWindowPos, IconProxy, UserInput};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
-use bevy_mod_raycast::prelude::{CursorRay, Raycast};
 
 // TODO:
 // Watch for left CTRL just pressed, if so, move camera with transform
@@ -32,14 +31,23 @@ use bevy_mod_raycast::prelude::{CursorRay, Raycast};
 type CameraQuery<'w, 's> = Query<'w, 's, &'w Transform, With<GizmoCamera>>;
 type ActiveSelectionQuery<'w, 's> = Query<'w, 's, Entity, With<ActiveSelection>>;
 type TransformGizmoQuery<'w, 's> =
-    Query<'w, 's, (Entity, &'w GizmoAxis, &'w Parent), With<TransformGizmo>>;
+    Query<'w, 's, (Entity, &'w GizmoAxis, &'w ChildOf), With<TransformGizmo>>;
 
 type NonActiveSelectionQuery<'w, 's> =
     Query<'w, 's, Entity, (With<Selected>, Without<ActiveSelection>)>;
 type TransformQuery<'w, 's> =
     Query<'w, 's, (&'w mut Transform, &'w GlobalTransform, Entity), Without<GizmoCamera>>;
-type GizmoMeshNameQuery<'w, 's> = Query<'w, 's, (Entity, Option<&'w GizmoMesh>, Option<&'w IconProxy>, &'w Name)>;
-type ParentQuery<'w, 's> = Query<'w, 's, &'w Parent>;
+type GizmoMeshNameQuery<'w, 's> = Query<
+    'w,
+    's,
+    (
+        Entity,
+        Option<&'w GizmoMesh>,
+        Option<&'w IconProxy>,
+        &'w Name,
+    ),
+>;
+type ParentQuery<'w, 's> = Query<'w, 's, &'w ChildOf>;
 type ChildrenQuery<'w, 's> = Query<'w, 's, &'w Children>;
 // ------------------------------------------------------------------------
 
@@ -146,7 +154,11 @@ pub fn handle_init_transform_drag(
             &mut raycast_cursor_pos,
         );
 
-        if hit_type == HitType::None || hit_type == HitType::Icon || hit_type == HitType::Mesh || entity.is_none() {
+        if hit_type == HitType::None
+            || hit_type == HitType::Icon
+            || hit_type == HitType::Mesh
+            || entity.is_none()
+        {
             return;
         }
 

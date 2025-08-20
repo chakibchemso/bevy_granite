@@ -6,14 +6,14 @@ use crate::{
 };
 use bevy::{
     asset::{AssetServer, Assets, Handle},
-    core::Name,
     ecs::{
         bundle::Bundle,
         entity::Entity,
         system::{Commands, Res, ResMut},
     },
-    pbr::{PbrBundle, StandardMaterial},
-    render::mesh::Mesh,
+    pbr::{MeshMaterial3d, StandardMaterial},
+    prelude::Name,
+    render::mesh::{Mesh, Mesh3d},
     transform::components::Transform,
 };
 use bevy_granite_logging::{
@@ -176,17 +176,15 @@ impl OBJ {
         mesh_handle: Handle<Mesh>,
     ) -> impl Bundle {
         (
-            PbrBundle {
-                transform,
-                mesh: mesh_handle,
-                material: obj
-                    .material
+            transform,
+            Mesh3d(mesh_handle),
+            MeshMaterial3d(
+                obj.material
                     .current
                     .handle
                     .clone()
                     .expect("This obj should always have a handle"),
-                ..Default::default()
-            },
+            ),
             Name::new(identity.name.clone()),
             HasRuntimeData,
             GraniteEditorSerdeEntity,

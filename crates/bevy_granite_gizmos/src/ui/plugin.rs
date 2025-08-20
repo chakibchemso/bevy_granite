@@ -2,7 +2,7 @@ use super::editor_gizmos_ui;
 use crate::is_gizmos_active;
 use bevy::{
     app::{App, Plugin, Update},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
 };
 
 pub struct UIPlugin;

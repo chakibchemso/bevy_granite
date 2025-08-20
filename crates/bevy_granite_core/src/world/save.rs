@@ -1,13 +1,13 @@
 use crate::{
     entities::{serialize_entities, ComponentEditor, HasRuntimeData, IdentityData, SpawnSource},
     events::{CollectRuntimeDataEvent, RequestSaveEvent, RuntimeDataReadyEvent},
-    shared::absolute_asset_to_rel, WorldSaveSuccessEvent,
+    shared::absolute_asset_to_rel,
+    WorldSaveSuccessEvent,
 };
 use bevy::{
     asset::io::file::FileAssetReader,
-    ecs::{entity::Entity, system::Resource},
-    hierarchy::Parent,
-    prelude::{Commands, EventReader, EventWriter, Query, ResMut, World},
+    ecs::entity::Entity,
+    prelude::{ChildOf, Commands, EventReader, EventWriter, Query, ResMut, Resource, World},
     transform::components::Transform,
 };
 use bevy_granite_logging::{
@@ -45,12 +45,18 @@ pub fn save_request_system(
     mut save_request: ResMut<SaveWorldRequestData>,
     mut event_writer: EventWriter<CollectRuntimeDataEvent>,
     mut event_reader: EventReader<RequestSaveEvent>,
-    query: Query<(Entity, &IdentityData, Option<&Transform>, Option<&Parent>, &SpawnSource)>,
+    query: Query<(
+        Entity,
+        &IdentityData,
+        Option<&Transform>,
+        Option<&ChildOf>,
+        &SpawnSource,
+    )>,
 ) {
     // Process only one save request per frame to avoid conflicts
     if let Some(RequestSaveEvent(path)) = event_reader.read().next() {
         let spawn_source = absolute_asset_to_rel(path.clone());
-        
+
         log!(
             LogType::Editor,
             LogLevel::Info,
@@ -59,7 +65,7 @@ pub fn save_request_system(
             spawn_source,
             path
         );
-        
+
         event_writer.send(CollectRuntimeDataEvent(spawn_source.clone()));
 
         // Part 1.
@@ -107,8 +113,10 @@ pub fn save_request_system(
             component_data: None,
             components_ready: false,
         };
-        
-        save_request.pending_saves.insert(spawn_source.clone(), (asset_path.clone(), world_state));
+
+        save_request
+            .pending_saves
+            .insert(spawn_source.clone(), (asset_path.clone(), world_state));
 
         log!(
             LogType::Editor,
@@ -157,12 +165,13 @@ pub fn collect_components_system(
         let spawn_source_clone = spawn_source.clone();
 
         // Need access to world to get components
-        commands.add(move |world: &mut World| {
+        commands.queue(move |world: &mut World| {
             let component_editor = world.resource::<ComponentEditor>();
             let mut collected_data = HashMap::new();
 
             for entity in entities {
-                let serialized_components = component_editor.serialize_entity_components(world, entity);
+                let serialized_components =
+                    component_editor.serialize_entity_components(world, entity);
 
                 if !serialized_components.is_empty() {
                     collected_data.insert(entity, serialized_components);
@@ -181,7 +190,7 @@ pub fn collect_components_system(
                 if let Some((_, world_state)) = data.pending_saves.get_mut(&spawn_source_clone) {
                     world_state.component_data = Some(collected_data);
                     world_state.components_ready = true;
-                    
+
                     log!(
                         LogType::Game,
                         LogLevel::Info,
@@ -189,7 +198,7 @@ pub fn collect_components_system(
                         "Sending RuntimeDataReadyEvent for source: {}",
                         spawn_source_clone
                     );
-                    
+
                     world.send_event(RuntimeDataReadyEvent(spawn_source_clone.clone()));
                 }
             }
@@ -211,7 +220,7 @@ pub fn save_data_ready_system(
             "Save data ready for source: {}",
             source
         );
-        
+
         if let Some((path, world_state)) = save_request_data.pending_saves.remove(source) {
             if !world_state.components_ready {
                 log!(

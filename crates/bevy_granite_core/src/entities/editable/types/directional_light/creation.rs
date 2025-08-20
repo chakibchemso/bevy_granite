@@ -5,9 +5,9 @@ use crate::{
 };
 use bevy::{
     color::Color,
-    core::Name,
     ecs::{bundle::Bundle, entity::Entity, system::Commands},
-    pbr::{DirectionalLight, DirectionalLightBundle, VolumetricLight},
+    pbr::{DirectionalLight, VolumetricLight},
+    prelude::Name,
     transform::components::Transform,
 };
 use uuid::Uuid;
@@ -68,18 +68,11 @@ impl DirLight {
         transform: Transform,
     ) -> impl Bundle {
         (
-            DirectionalLightBundle {
-                transform,
-                directional_light: DirectionalLight {
-                    color: Color::linear_rgb(
-                        dir_light.color.0,
-                        dir_light.color.1,
-                        dir_light.color.2,
-                    ),
-                    illuminance: dir_light.illuminance,
-                    shadows_enabled: dir_light.shadows_enabled,
-                    ..Default::default()
-                },
+            transform,
+            DirectionalLight {
+                color: Color::linear_rgb(dir_light.color.0, dir_light.color.1, dir_light.color.2),
+                illuminance: dir_light.illuminance,
+                shadows_enabled: dir_light.shadows_enabled,
                 ..Default::default()
             },
             Name::new(identity.name.clone()),

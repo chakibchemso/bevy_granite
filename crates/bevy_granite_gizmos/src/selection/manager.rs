@@ -8,22 +8,24 @@ use crate::{
         ActiveSelection, RequestSelectEntityRangeEvent, Selected,
     },
 };
-use bevy::ecs::system::Commands;
-use bevy::prelude::{
-    Added, BuildChildren, Component, Entity, EventReader, EventWriter, Name, Query,
-    RemovedComponents, Res, ResMut, With,
+use bevy::{
+    ecs::query::Changed,
+    prelude::{
+        Added, Component, Entity, EventReader, EventWriter, Name, Query, RemovedComponents, Res,
+        ResMut, With,
+    },
 };
+use bevy::{ecs::system::Commands, picking::hover::PickingInteraction};
 use bevy_granite_core::{IconProxy, UserInput};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
-use bevy_mod_raycast::prelude::{CursorRay, Raycast};
 
 pub fn apply_pending_parents(mut commands: Commands, query: Query<(Entity, &ParentTo)>) {
     for (entity, parent_to) in &query {
-        if let Some(mut parent) = commands.get_entity(parent_to.0) {
-            parent.push_children(&[entity]);
+        if let Ok(mut parent) = commands.get_entity(parent_to.0) {
+            parent.add_children(&[entity]);
             commands.entity(entity).remove::<ParentTo>();
         } else {
             log!(
@@ -201,8 +203,16 @@ pub fn handle_entity_selection(
     mut deselect_event_writer: EventWriter<RequestDeselectAllEntitiesEvent>,
     active_selection: Query<Entity, With<ActiveSelection>>,
     user_input: Res<UserInput>,
-    cursor_ray: Res<CursorRay>,
-    mut raycast: Raycast,
+    interaction: Query<
+        (
+            Entity,
+            Option<&GizmoMesh>,
+            Option<&IconProxy>,
+            &Name,
+            &PickingInteraction,
+        ),
+        Changed<PickingInteraction>,
+    >,
     gizmo_filter: Query<(Entity, Option<&GizmoMesh>, Option<&IconProxy>, &Name)>,
     icon_proxy_query: Query<&IconProxy>,
     mut raycast_cursor_last_pos: ResMut<RaycastCursorLast>,
@@ -223,13 +233,7 @@ pub fn handle_entity_selection(
 
         let additive = user_input.shift_left.pressed;
 
-        let (entity, hit_type) = raycast_at_cursor(
-            &cursor_ray,
-            &mut raycast,
-            gizmo_filter,
-            &mut raycast_cursor_last_pos,
-            &mut raycast_cursor_pos,
-        );
+        let (entity, hit_type) = raycast_at_cursor(interaction);
 
         if hit_type == HitType::Gizmo {
             return;
@@ -245,11 +249,11 @@ pub fn handle_entity_selection(
                     match hit_type {
                         HitType::Icon => "Icon",
                         HitType::Mesh => "Mesh",
-                        _ => "Unknown"
+                        _ => "Unknown",
                     }
                 );
 
-                if let Ok(active_entity) = active_selection.get_single() {
+                if let Ok(active_entity) = active_selection.single() {
                     if active_entity == entity {
                         log!(
                             LogType::Editor,
@@ -274,7 +278,7 @@ pub fn handle_entity_selection(
                     entity
                 };
 
-                select_event_writer.send(RequestSelectEntityEvent {
+                select_event_writer.write(RequestSelectEntityEvent {
                     entity: target_entity,
                     additive,
                 });
@@ -290,7 +294,7 @@ pub fn handle_entity_selection(
                 "Could not find an entity, deselecting",
             );
 
-            deselect_event_writer.send(RequestDeselectAllEntitiesEvent);
+            deselect_event_writer.write(RequestDeselectAllEntitiesEvent);
         }
     }
 }

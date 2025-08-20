@@ -1,15 +1,16 @@
 use crate::entities::editable::RequestEntityUpdateFromClass;
 
-use super::{UserUpdatedRectBrushEvent, RectBrush};
+use super::{RectBrush, UserUpdatedRectBrushEvent};
 use bevy::{
     asset::Assets,
     ecs::{
         event::EventReader,
         system::{Query, ResMut},
     },
+    render::mesh::{Mesh3d, MeshAabb},
 };
 use bevy::{
-    prelude::{Entity, Handle},
+    prelude::Entity,
     render::{mesh::Mesh, primitives::Aabb},
 };
 use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
@@ -28,7 +29,7 @@ impl RectBrush {
         );
         request_update
             .rectangle_brush
-            .send(UserUpdatedRectBrushEvent {
+            .write(UserUpdatedRectBrushEvent {
                 entity: rect_e,
                 data: self.clone(),
             });
@@ -37,7 +38,7 @@ impl RectBrush {
 
 pub fn update_rectangle_brush_system(
     mut reader: EventReader<UserUpdatedRectBrushEvent>,
-    mut query: Query<(Entity, &Handle<Mesh>)>,
+    mut query: Query<(Entity, &Mesh3d)>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut aabbs: Query<&mut Aabb>,
 ) {
@@ -63,7 +64,6 @@ pub fn update_rectangle_brush_system(
                 mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, new_vertices);
                 mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, new_uvs);
                 mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-
                 // Compute the new AABB from the updated mesh
                 if let Some(new_mesh_aabb) = mesh.compute_aabb() {
                     if let Ok(mut entity_aabb) = aabbs.get_mut(*requested_entity) {
