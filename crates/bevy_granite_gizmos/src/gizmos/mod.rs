@@ -2,7 +2,7 @@ use bevy::ecs::{component::Component, resource::Resource};
 
 pub mod distance_scaling;
 pub mod events;
-pub mod manager;
+// pub mod manager;
 pub mod plugin;
 // pub mod rotate;
 // pub mod transform;
@@ -45,7 +45,7 @@ pub use events::{
     DespawnGizmoEvent, RotateDraggingEvent, RotateInitDragEvent, RotateResetDragEvent,
     SpawnGizmoEvent, TransformDraggingEvent, TransformInitDragEvent, TransformResetDragEvent,
 };
-pub use manager::{gizmo_changed_watcher, gizmo_events};
+// pub use manager::{gizmo_changed_watcher, gizmo_events};
 pub use plugin::GizmoPlugin;
 // pub use rotate::{
 //     despawn_rotate_gizmo, handle_init_rotate_drag, handle_rotate_dragging, handle_rotate_input,
