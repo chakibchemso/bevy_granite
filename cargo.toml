@@ -37,6 +37,8 @@ bevy_granite_gizmos = { path = "crates/bevy_granite_gizmos", optional = true }
 bevy_granite_logging = { path = "crates/bevy_granite_logging", optional = true }
 bevy_granite_macros = { path = "crates/bevy_granite_macros", optional = true }
 
+[dev-dependencies]
+serde = "*"
 [profile.dev]
 opt-level = 1
 
