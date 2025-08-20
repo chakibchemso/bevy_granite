@@ -39,6 +39,11 @@ bevy_granite_macros = { path = "crates/bevy_granite_macros", optional = true }
 
 [dev-dependencies]
 serde = "*"
+
+[[example]]
+name = "main"
+required-features = ["bevy/bevy_winit"]
+
 [profile.dev]
 opt-level = 1
 
