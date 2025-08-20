@@ -2,9 +2,10 @@ use bevy::{
     ecs::{
         event::{EventReader, EventWriter},
         query::With,
-        system::{Query, ResMut, Resource},
+        system::{Query, ResMut},
     },
     math::Vec2,
+    prelude::Resource,
     window::{PrimaryWindow, Window},
 };
 use bevy_egui::EguiContexts;

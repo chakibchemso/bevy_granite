@@ -20,7 +20,7 @@ fn preload_fallback_material(
     // Fallback editable default white
     let mut white_editable = EditableMaterial::get_new_unnamed_base_color();
     let white_handle: Handle<StandardMaterial> = materials.add(StandardMaterial::default());
-    white_editable.set_handle(Some(white_handle));
+    white_editable.set_handle(Some(bevy::pbr::MeshMaterial3d(white_handle)));
     white_editable.update_name("default".to_string());
     white_editable.update_path("materials/internal/default.mat".to_string());
     white_editable.material_exists_and_load(

@@ -348,7 +348,7 @@ impl ComponentEditor {
         world: &mut World,
         entity: Entity,
         component_type_name: &str,
-        reflected_data: &dyn bevy::reflect::Reflect,
+        reflected_data: &dyn bevy::reflect::PartialReflect,
     ) {
         let type_registry = self.type_registry.clone();
 

@@ -1,8 +1,11 @@
-use crate::{interface::{
-    events::{RequestNewParent, RequestRemoveChildren, RequestRemoveParents},
-    shared::widgets::make_frame_solid_via_context,
-    EditorEvents,
-}, UI_CONFIG};
+use crate::{
+    interface::{
+        events::{RequestNewParent, RequestRemoveChildren, RequestRemoveParents},
+        shared::widgets::make_frame_solid_via_context,
+        EditorEvents,
+    },
+    UI_CONFIG,
+};
 use bevy::prelude::Vec2;
 use bevy_egui::{
     egui::{self, Window},
@@ -22,10 +25,10 @@ pub fn relationship_ui(
         .fixed_pos([position.x, position.y])
         // call this to ensure the window is not transparent when theme transparency is selected
         .frame(make_frame_solid_via_context(
-            egui::Frame::window(&contexts.ctx_mut().style()),
-            &contexts.ctx_mut(),
+            egui::Frame::window(&contexts.ctx_mut().expect("Egui context to exist").style()),
+            &contexts.ctx_mut().expect("Egui context to exist"),
         ))
-        .show(contexts.ctx_mut(), |ui| {
+        .show(contexts.ctx_mut().expect("Egui context to exist"), |ui| {
             ui.vertical(|ui| {
                 ui.set_max_width(250.);
                 ui.label("Relationship:");
@@ -49,7 +52,7 @@ pub fn relationship_ui(
             });
         });
 
-    let ctx = contexts.ctx_mut();
+    let ctx = contexts.ctx_mut().expect("Egui context to exist");
     if ctx.input(|i| i.pointer.any_click()) && !ctx.is_pointer_over_area() {
         should_close = true;
     }

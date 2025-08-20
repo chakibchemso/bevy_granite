@@ -1,12 +1,15 @@
 use super::{IconBundle, IconEntity};
 use crate::{editor_state::EditorState, viewport::config::VisualizationConfig};
 use bevy::{
-    hierarchy::BuildChildren,
-    pbr::{NotShadowCaster, NotShadowReceiver, PbrBundle, StandardMaterial},
+    pbr::{MeshMaterial3d, NotShadowCaster, NotShadowReceiver, StandardMaterial},
     prelude::{
         Assets, Commands, Entity, Handle, Image, Mesh, Name, Query, Res, ResMut, Transform, Without,
     },
-    render::{alpha::AlphaMode, mesh::Indices, view::RenderLayers},
+    render::{
+        alpha::AlphaMode,
+        mesh::{Indices, Mesh3d},
+        view::RenderLayers,
+    },
 };
 use bevy_granite_core::{GraniteType, IconProxy, IdentityData, TreeHiddenEntity};
 
@@ -80,16 +83,11 @@ fn spawn_icon_for_entity(
 
     let icon_entity = commands
         .spawn((
-            IconBundle {
-                icon_entity: IconEntity { target_entity },
-                pbr_bundle: PbrBundle {
-                    mesh: mesh_handle,
-                    material: material_handle,
-                    transform: Transform::default(), // Offset relative to parent
-                    ..Default::default()
-                },
-                name: Name::new(icon_name),
-            },
+            IconEntity { target_entity },
+            Mesh3d(mesh_handle),
+            MeshMaterial3d(material_handle),
+            Name::new(icon_name),
+            Transform::default(), // Offset relative to parent
             TreeHiddenEntity,
             IconProxy { target_entity },
             RenderLayers::from_layers(&[14]), // 14 is our UI/Gizmo layer.

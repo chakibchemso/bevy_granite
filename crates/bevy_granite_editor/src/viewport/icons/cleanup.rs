@@ -1,8 +1,8 @@
-use bevy_granite_core::IconEntity;
 use bevy::{
     ecs::entity::Entity,
-    prelude::{Commands, DespawnRecursiveExt, Query, Without},
+    prelude::{Commands, Query, Without},
 };
+use bevy_granite_core::IconEntity;
 
 pub fn cleanup_icon_entities_system(
     mut commands: Commands,
@@ -12,7 +12,7 @@ pub fn cleanup_icon_entities_system(
     for (icon_entity, icon_comp) in icon_query.iter() {
         // If the target entity no longer exists, despawn the icon
         if target_query.get(icon_comp.target_entity).is_err() {
-            commands.entity(icon_entity).despawn_recursive();
+            commands.entity(icon_entity).despawn();
         }
     }
 }

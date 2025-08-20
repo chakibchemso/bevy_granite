@@ -19,7 +19,7 @@ bevy_granite_gizmos = { path = "../bevy_granite_gizmos"}
 bevy_granite_core = { path = "../bevy_granite_core"}
 bevy_granite_logging = { path = "../bevy_granite_logging"}
 
-egui_dock = {version = "0.13", features = ["serde"]}
+egui_dock = {version = "0.17.0", features = ["serde"]}
 webbrowser = "1.0.5"
 
 [lib]

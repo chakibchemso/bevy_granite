@@ -272,7 +272,7 @@ pub fn material_from_path_into_scene(
     // Create the EditableMaterial
     let obj_material = EditableMaterial {
         path: path.to_string(),
-        handle: Some(handle),
+        handle: Some(bevy::pbr::MeshMaterial3d(handle)),
         def: Some(mat_def.clone()),
         fields: Some(found_fields),
         friendly_name: mat_def.friendly_name.clone(),

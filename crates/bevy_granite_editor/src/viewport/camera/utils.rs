@@ -1,9 +1,10 @@
 use crate::{editor_state::INPUT_CONFIG, viewport::camera::CameraTarget};
 use bevy::{
+    core_pipeline::core_3d::Camera3d,
     input::mouse::{MouseMotion, MouseWheel},
     prelude::{
-        Camera, Camera3dBundle, Commands, EulerRot, EventReader, Local, Name, Quat, Query, Res,
-        ResMut, Time, Transform, Vec2, Vec3, With,
+        Camera, Commands, EulerRot, EventReader, Local, Name, Quat, Query, Res, ResMut, Time,
+        Transform, Vec2, Vec3, With,
     },
     render::view::RenderLayers,
 };
@@ -12,10 +13,8 @@ use bevy_granite_core::{TreeHiddenEntity, UICamera, UserInput};
 pub fn add_gizmo_camera(mut commands: Commands) {
     let _ui_camera = commands
         .spawn((
-            Camera3dBundle {
-                transform: Transform::from_xyz(2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-                ..Default::default()
-            },
+            Transform::from_xyz(2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            Camera3d::default(),
             Name::new("UI Camera"),
         ))
         .insert(Camera {
@@ -52,7 +51,7 @@ pub fn handle_movement(
     time: Res<Time>,
     mut movement_speed: Local<f32>,
 ) {
-    let delta_time = time.delta_seconds();
+    let delta_time = time.delta_secs();
     let base_movement_speed = INPUT_CONFIG.fps_camera_speed;
     let base_rotation_sensitivity = INPUT_CONFIG.fps_camera_sensitivity / 100.; // divide by is to somewhat normalize these values relative to each other
     if *movement_speed == 0.0 {

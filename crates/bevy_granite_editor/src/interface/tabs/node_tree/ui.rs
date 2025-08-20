@@ -50,21 +50,22 @@ fn draw_node_background(
         .drag_payload
         .as_ref()
         .map_or(false, |entities| entities.contains(&entity));
-    let is_valid_drop_target = data.drag_payload.as_ref().map_or(false, |entities| 
+    let is_valid_drop_target = data.drag_payload.as_ref().map_or(false, |entities| {
         !entities.contains(&entity) && is_valid_drop(entities, entity, &data.hierarchy)
-    );
-    let is_invalid_drop_target = data.drag_payload.as_ref().map_or(false, |entities| 
-        entities.contains(&entity) || entities
-            .iter()
-            .any(|&dragged_entity| is_descendant_of(entity, dragged_entity, &data.hierarchy))
-    );
+    });
+    let is_invalid_drop_target = data.drag_payload.as_ref().map_or(false, |entities| {
+        entities.contains(&entity)
+            || entities
+                .iter()
+                .any(|&dragged_entity| is_descendant_of(entity, dragged_entity, &data.hierarchy))
+    });
 
     if is_being_dragged {
         // Being dragged - use a tinted version of the selection color
         let drag_color = ui.style().visuals.selection.bg_fill.gamma_multiply(0.7);
         ui.painter().rect_filled(
             *row_rect,
-            ui.style().visuals.menu_rounding / 2.,
+            ui.style().visuals.menu_corner_radius / 2.,
             drag_color,
         );
     } else if is_invalid_drop_target && search_term.is_empty() {
@@ -72,15 +73,14 @@ fn draw_node_background(
         let error_color = ui.style().visuals.error_fg_color.gamma_multiply(0.3);
         ui.painter().rect_filled(
             *row_rect,
-            ui.style().visuals.menu_rounding / 2.,
+            ui.style().visuals.menu_corner_radius / 2.,
             error_color,
         );
     } else if is_valid_drop_target && search_term.is_empty() {
-
     } else if is_active_selected {
         ui.painter().rect_filled(
             *row_rect,
-            ui.style().visuals.menu_rounding / 2.,
+            ui.style().visuals.menu_corner_radius / 2.,
             ui.style().visuals.selection.bg_fill,
         );
     } else if is_selected {
@@ -334,7 +334,15 @@ fn render_tree_node(
         data.should_scroll_to_selection = false;
     }
 
-    draw_node_background(ui, &row_rect, entity, data, is_selected, is_active_selected, search_term);
+    draw_node_background(
+        ui,
+        &row_rect,
+        entity,
+        data,
+        is_selected,
+        is_active_selected,
+        search_term,
+    );
 
     let shift_held = ui.input(|i| i.modifiers.shift);
     let ctrl_held = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
@@ -357,8 +365,10 @@ fn render_tree_node(
         let style_visuals = ui.style().visuals.clone();
 
         ui.columns(2, |columns| {
-            let (name_text, type_text) = create_highlighted_text(name, entity_type, search_term, &columns[0]);
-            let name_button = create_name_button(&name_text, &visuals, is_selected, is_active_selected);
+            let (name_text, type_text) =
+                create_highlighted_text(name, entity_type, search_term, &columns[0]);
+            let name_button =
+                create_name_button(&name_text, &visuals, is_selected, is_active_selected);
 
             let button_response = columns[0].add(name_button);
 
@@ -393,7 +403,18 @@ fn render_tree_node(
             });
 
             // Draw triangle AFTER both columns
-            draw_expand_triangle(&columns[0], &icon_rect, &button_response, &visuals, has_children, is_expanded, is_selected, is_active_selected, search_term, icon_size);
+            draw_expand_triangle(
+                &columns[0],
+                &icon_rect,
+                &button_response,
+                &visuals,
+                has_children,
+                is_expanded,
+                is_selected,
+                is_active_selected,
+                search_term,
+                icon_size,
+            );
 
             // Handle icon click for expand/collapse
             if has_children && icon_response.clicked() && search_term.is_empty() {
@@ -408,7 +429,16 @@ fn render_tree_node(
         }
     });
 
-    render_children(ui, entity, hierarchy, data, has_children, is_expanded, indent_level, search_term);
+    render_children(
+        ui,
+        entity,
+        hierarchy,
+        data,
+        has_children,
+        is_expanded,
+        indent_level,
+        search_term,
+    );
 }
 
 fn render_children(

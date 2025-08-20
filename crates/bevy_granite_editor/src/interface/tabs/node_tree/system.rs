@@ -1,9 +1,9 @@
 use super::ui::expand_to_entity;
-use crate::interface::{SideDockState, SideTab};
 use crate::interface::events::RequestRemoveParentsFromEntities;
+use crate::interface::{SideDockState, SideTab};
 use bevy::{
     ecs::query::{Changed, Or},
-    prelude::{Entity, Event, EventWriter, Name, Parent, Query, ResMut, With, Without},
+    prelude::{ChildOf, Entity, Event, EventWriter, Name, Query, ResMut, With, Without},
 };
 use bevy_granite_core::{GraniteType, IdentityData, TreeHiddenEntity};
 use bevy_granite_gizmos::{
@@ -49,7 +49,7 @@ pub fn update_node_tree_tabs_system(
     active_selection: Query<Entity, With<ActiveSelection>>,
     all_selected: Query<Entity, With<Selected>>,
     hierarchy_query: Query<
-        (Entity, &Name, Option<&Parent>, Option<&IdentityData>),
+        (Entity, &Name, Option<&ChildOf>, Option<&IdentityData>),
         (
             Without<GizmoParent>,
             Without<GizmoMesh>,
@@ -78,7 +78,7 @@ pub fn update_node_tree_tabs_system(
             data.active_selection = active_selection.get_single().ok();
             data.selected_entities = all_selected.iter().collect();
 
-            let (entities_changed, data_changed, hierarchy_changed) = 
+            let (entities_changed, data_changed, hierarchy_changed) =
                 detect_changes(&hierarchy_query, &changed_hierarchy, data);
 
             if entities_changed || data_changed || hierarchy_changed {
@@ -94,7 +94,7 @@ pub fn update_node_tree_tabs_system(
                     // Auto-expand and scroll for any external selection change (including initial selection)
                     expand_to_entity(&mut data.hierarchy, new_active);
                     data.should_scroll_to_selection = true;
-                    
+
                     log!(
                         LogType::Editor,
                         LogLevel::Info,
@@ -116,17 +116,17 @@ pub fn update_node_tree_tabs_system(
                         if let Some(prev) = data.active_selection {
                             // Build visual order of currently visible nodes
                             let visual_order = build_visual_order(&data.hierarchy);
-                            
+
                             // Find indices in visual order
                             let prev_index = visual_order.iter().position(|&e| e == prev);
                             let new_index = visual_order.iter().position(|&e| e == new_selection);
-                            
+
                             if let (Some(prev_idx), Some(new_idx)) = (prev_index, new_index) {
                                 let start = prev_idx.min(new_idx);
                                 let end = prev_idx.max(new_idx);
-                                
+
                                 let range_entities = visual_order[start..=end].to_vec();
-                                
+
                                 log!(
                                     LogType::Editor,
                                     LogLevel::Info,
@@ -136,7 +136,7 @@ pub fn update_node_tree_tabs_system(
                                     new_selection,
                                     range_entities.len()
                                 );
-                                
+
                                 select_range_event_writer.send(RequestSelectEntityRangeEvent {
                                     entities: range_entities,
                                     additive: true,
@@ -196,7 +196,7 @@ pub fn update_node_tree_tabs_system(
             data.new_selection = None;
             data.additive_selection = false;
             data.range_selection = false;
-            
+
             // Decrement frame counter for tree click protection
             if data.tree_click_frames_remaining > 0 {
                 data.tree_click_frames_remaining -= 1;
@@ -280,7 +280,7 @@ pub fn is_descendant_of(
 
 fn detect_changes(
     hierarchy_query: &Query<
-        (Entity, &Name, Option<&Parent>, Option<&IdentityData>),
+        (Entity, &Name, Option<&ChildOf>, Option<&IdentityData>),
         (
             Without<GizmoParent>,
             Without<GizmoMesh>,
@@ -299,16 +299,15 @@ fn detect_changes(
     data: &NodeTreeTabData,
 ) -> (bool, bool, bool) {
     use std::collections::HashSet;
-    
-    let current_entities: HashSet<Entity> =
-        hierarchy_query.iter().map(|(e, _, _, _)| e).collect();
+
+    let current_entities: HashSet<Entity> = hierarchy_query.iter().map(|(e, _, _, _)| e).collect();
     let existing_entities: HashSet<Entity> =
         data.hierarchy.iter().map(|entry| entry.entity).collect();
 
     // Check if entities changed OR if any existing entity had its data changed OR if parent relationships changed
     let entities_changed = current_entities != existing_entities;
     let data_changed = !changed_hierarchy.is_empty();
-    
+
     // Also check if any parent relationships changed by comparing current vs stored hierarchy
     let hierarchy_changed = if !entities_changed {
         hierarchy_query.iter().any(|(entity, _, parent, _)| {
@@ -328,26 +327,29 @@ fn detect_changes(
 
 fn build_visual_order(hierarchy: &[HierarchyEntry]) -> Vec<Entity> {
     use std::collections::HashMap;
-    
+
     // Build parent -> children map
     let mut children_map: HashMap<Option<Entity>, Vec<Entity>> = HashMap::new();
     for entry in hierarchy {
-        children_map.entry(entry.parent).or_default().push(entry.entity);
+        children_map
+            .entry(entry.parent)
+            .or_default()
+            .push(entry.entity);
     }
-    
+
     // Sort children by entity index to maintain consistent order
     for children in children_map.values_mut() {
         children.sort_by_key(|entity| entity.index());
     }
-    
+
     // Build expansion state map
     let expanded_map: HashMap<Entity, bool> = hierarchy
         .iter()
         .map(|entry| (entry.entity, entry.is_expanded))
         .collect();
-    
+
     let mut visual_order = Vec::new();
-    
+
     // Recursive function to build visual order
     fn add_visible_children(
         parent: Option<Entity>,
@@ -358,7 +360,7 @@ fn build_visual_order(hierarchy: &[HierarchyEntry]) -> Vec<Entity> {
         if let Some(children) = children_map.get(&parent) {
             for &child in children {
                 visual_order.push(child);
-                
+
                 // Only add children if this node is expanded
                 if expanded_map.get(&child).copied().unwrap_or(false) {
                     add_visible_children(Some(child), children_map, expanded_map, visual_order);
@@ -366,17 +368,17 @@ fn build_visual_order(hierarchy: &[HierarchyEntry]) -> Vec<Entity> {
             }
         }
     }
-    
+
     // Start with root nodes (parent = None)
     add_visible_children(None, &children_map, &expanded_map, &mut visual_order);
-    
+
     visual_order
 }
 
 fn update_hierarchy_data(
     data: &mut NodeTreeTabData,
     hierarchy_query: &Query<
-        (Entity, &Name, Option<&Parent>, Option<&IdentityData>),
+        (Entity, &Name, Option<&ChildOf>, Option<&IdentityData>),
         (
             Without<GizmoParent>,
             Without<GizmoMesh>,
@@ -386,7 +388,7 @@ fn update_hierarchy_data(
     hierarchy_changed: bool,
 ) {
     use std::collections::HashMap;
-    
+
     if hierarchy_changed {
         log!(
             LogType::Editor,

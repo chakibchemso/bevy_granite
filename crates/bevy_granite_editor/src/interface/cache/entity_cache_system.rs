@@ -1,13 +1,15 @@
-
+use crate::interface::{
+    cache::entity_cache::{EntityData, EntityUIDataCache},
+    tabs::entity_editor::EntityRegisteredData,
+};
 use bevy::{
     asset::Handle,
-    pbr::StandardMaterial,
-    prelude::{Entity, Name, World, Transform},
+    pbr::{MeshMaterial3d, StandardMaterial},
+    prelude::{Entity, Name, Transform, World},
     transform::components::GlobalTransform,
 };
-use bevy_granite_gizmos::{DragState, ActiveSelection};
 use bevy_granite_core::{ComponentEditor, IdentityData, TransformData};
-use crate::interface::{cache::entity_cache::{EntityData, EntityUIDataCache}, tabs::entity_editor::EntityRegisteredData};
+use bevy_granite_gizmos::{ActiveSelection, DragState};
 
 pub type EntityCacheQueryItem<'a> = (
     Entity,
@@ -15,7 +17,7 @@ pub type EntityCacheQueryItem<'a> = (
     &'a mut Transform,
     &'a mut GlobalTransform,
     &'a mut IdentityData,
-    Option<&'a mut Handle<StandardMaterial>>,
+    Option<&'a mut MeshMaterial3d<StandardMaterial>>,
     &'a ActiveSelection,
 );
 
@@ -29,39 +31,45 @@ pub fn update_entity_cache_system(world: &mut World) {
     let gizmo_drag = world.resource::<DragState>();
     let component_editor = world.resource::<ComponentEditor>();
 
-    let maybe_new_data =
-        if let Some((entity, name, _transform, global_transform, identity_data, material_handle, _active)) =
-            query.iter(world).next()
-        {
-            let new_registered = component_editor.get_reflected_components(world, entity);
-            // Use GlobalTransform for UI display (world position), but keep local transform for editing
-            let global = global_transform.compute_transform();
+    let maybe_new_data = if let Some((
+        entity,
+        name,
+        _transform,
+        global_transform,
+        identity_data,
+        material_handle,
+        _active,
+    )) = query.iter(world).next()
+    {
+        let new_registered = component_editor.get_reflected_components(world, entity);
+        // Use GlobalTransform for UI display (world position), but keep local transform for editing
+        let global = global_transform.compute_transform();
 
-            let new_data = EntityData {
-                entity: Some(entity),
-                global_transform: TransformData {
-                    position: global.translation,  // World position
-                    rotation: global.rotation,     // World rotation  
-                    scale: global.scale,          // World scale
-                },
-                material_handle: material_handle.cloned(),
-                identity: IdentityData {
-                    name: name.to_string(),
-                    uuid: identity_data.uuid,
-                    class: identity_data.class.clone(),
-                },
-                registered: EntityRegisteredData {
-                    components: new_registered,
-                    registered_add_request: None,
-                    registered_remove_request: None,
-                    registered_data_changed: false,
-                },
-                gizmo_drag: gizmo_drag.clone(),
-            };
-            Some((entity, new_data))
-        } else {
-            None
+        let new_data = EntityData {
+            entity: Some(entity),
+            global_transform: TransformData {
+                position: global.translation, // World position
+                rotation: global.rotation,    // World rotation
+                scale: global.scale,          // World scale
+            },
+            material_handle: material_handle.cloned(),
+            identity: IdentityData {
+                name: name.to_string(),
+                uuid: identity_data.uuid,
+                class: identity_data.class.clone(),
+            },
+            registered: EntityRegisteredData {
+                components: new_registered,
+                registered_add_request: None,
+                registered_remove_request: None,
+                registered_data_changed: false,
+            },
+            gizmo_drag: gizmo_drag.clone(),
         };
+        Some((entity, new_data))
+    } else {
+        None
+    };
 
     let mut cache = world.resource_mut::<EntityUIDataCache>();
 

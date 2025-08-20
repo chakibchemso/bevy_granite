@@ -1,5 +1,5 @@
+use bevy::platform::collections::HashMap;
 use bevy::prelude::Resource;
-use bevy::utils::HashMap;
 use bevy_egui::egui;
 use bevy_egui::egui::{Stroke, TextStyle};
 use egui::Color32;

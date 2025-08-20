@@ -15,7 +15,7 @@ use crate::{
 };
 use bevy::{
     app::{PostUpdate, Startup},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
     gizmos::{
         config::{DefaultGizmoConfigGroup, GizmoConfig},
         AppGizmoBuilder,
