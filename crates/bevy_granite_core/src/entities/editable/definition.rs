@@ -79,6 +79,16 @@ pub trait GraniteType {
                 bevy::image::ImageSampler::Default,
                 bevy::render::render_asset::RenderAssetUsages::RENDER_WORLD,
             )
+            .unwrap();
+
+            let image = Image::from_buffer(
+                icon_bytes,
+                bevy::image::ImageType::Extension("png"),
+                bevy::image::CompressedImageFormats::all(),
+                true,
+                bevy::image::ImageSampler::Default,
+                bevy::render::render_asset::RenderAssetUsages::RENDER_WORLD,
+            )
             .unwrap_or_else(|_| panic!("Failed to load embedded {}", filename));
 
             let handle = Handle::<Image>::weak_from_u128(self.icon_handle_id());

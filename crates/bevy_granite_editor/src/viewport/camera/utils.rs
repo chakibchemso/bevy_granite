@@ -11,6 +11,8 @@ use bevy::{
 use bevy_granite_core::{TreeHiddenEntity, UICamera, UserInput};
 
 pub fn add_gizmo_camera(mut commands: Commands) {
+    let context = bevy_egui::EguiContext::default();
+
     let _ui_camera = commands
         .spawn((
             Transform::from_xyz(2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -22,6 +24,7 @@ pub fn add_gizmo_camera(mut commands: Commands) {
             ..Default::default()
         })
         .insert(UICamera)
+        .insert((bevy_egui::PrimaryEguiContext, context))
         .insert(TreeHiddenEntity)
         .insert(bevy_granite_gizmos::GizmoCamera)
         .insert(RenderLayers::layer(14)) // 14 is our UI/Gizmo layer.
