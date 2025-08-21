@@ -11,9 +11,13 @@ use crate::{
     },
     GizmoCamera,
 };
-use bevy::prelude::{
-    ChildOf, Children, Entity, EventReader, EventWriter, Gizmos, GlobalTransform, Name, ParamSet,
-    Query, Res, ResMut, Transform, Vec3, With, Without,
+use bevy::{
+    ecs::query::Changed,
+    picking::hover::PickingInteraction,
+    prelude::{
+        ChildOf, Children, Entity, EventReader, EventWriter, Gizmos, GlobalTransform, Name,
+        ParamSet, Query, Res, ResMut, Transform, Vec3, With, Without,
+    },
 };
 use bevy_granite_core::{mouse_to_world_delta, CursorWindowPos, IconProxy, UserInput};
 use bevy_granite_logging::{
@@ -129,13 +133,21 @@ pub fn handle_init_transform_drag(
     mut drag_state: ResMut<DragState>,
     resources: (
         Res<CursorWindowPos>,
-        Res<CursorRay>,
         ResMut<RaycastCursorLast>,
         ResMut<RaycastCursorPos>,
     ),
     mut duplicate_event_writer: EventWriter<RequestDuplicateAllSelectionEvent>,
-    mut raycast: Raycast,
     user_input: Res<UserInput>,
+    interactions: Query<
+        (
+            Entity,
+            Option<&GizmoMesh>,
+            Option<&IconProxy>,
+            &Name,
+            &PickingInteraction,
+        ),
+        Changed<PickingInteraction>,
+    >,
     mut queries: ParamSet<(
         ActiveSelectionQuery,
         TransformGizmoQuery,
@@ -144,15 +156,9 @@ pub fn handle_init_transform_drag(
         GizmoMeshNameQuery,
     )>,
 ) {
-    let (cursor_2d, cursor_ray, mut raycast_cursor_last_pos, mut raycast_cursor_pos) = resources;
+    let (cursor_2d, mut raycast_cursor_last_pos, mut raycast_cursor_pos) = resources;
     for TransformInitDragEvent in events.read() {
-        let (entity, hit_type) = raycast_at_cursor(
-            &cursor_ray,
-            &mut raycast,
-            queries.p4(),
-            &mut raycast_cursor_last_pos,
-            &mut raycast_cursor_pos,
-        );
+        let (entity, hit_type) = raycast_at_cursor(interactions);
 
         if hit_type == HitType::None
             || hit_type == HitType::Icon

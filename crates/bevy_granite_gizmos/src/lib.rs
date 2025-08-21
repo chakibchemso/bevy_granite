@@ -14,14 +14,8 @@ mod ui;
 // Re-export
 pub use camera::GizmoCamera;
 pub use gizmos::{
-    // despawn_rotate_gizmo, despawn_transform_gizmo,
-    GizmoMesh,
-    GizmoParent,
-    GizmoSnap,
-    GizmoType,
-    // RotateGizmo,
-    SelectedGizmo,
-    // TransformGizmo,
+    despawn_rotate_gizmo, despawn_transform_gizmo, GizmoMesh, GizmoParent, GizmoSnap, GizmoType,
+    RotateGizmo, SelectedGizmo, TransformGizmo,
 };
 pub use input::{watch_gizmo_change, DragState, GizmoAxis};
 pub use selection::{
