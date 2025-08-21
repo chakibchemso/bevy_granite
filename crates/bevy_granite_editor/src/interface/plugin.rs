@@ -100,6 +100,7 @@ impl Plugin for InterfacePlugin {
                     update_debug_tab_ui_system,
                     update_node_tree_tabs_system,
                 )
+                    .chain()
                     .run_if(is_editor_active),
             );
     }
