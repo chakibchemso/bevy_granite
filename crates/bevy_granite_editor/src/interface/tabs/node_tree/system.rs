@@ -21,7 +21,7 @@ pub struct RequestReparentEntityEvent {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NodeTreeTabData {
-    pub filterd_hierarchy: bool, // whether the hierarchy shows all entities or hides editor related ones
+    pub filtered_hierarchy: bool, // whether the hierarchy shows all entities or hides editor related ones
     pub active_selection: Option<Entity>,
     pub selected_entities: Vec<Entity>,
     pub new_selection: Option<Entity>,
@@ -40,7 +40,7 @@ pub struct NodeTreeTabData {
 impl Default for NodeTreeTabData {
     fn default() -> Self {
         Self {
-            filterd_hierarchy: true,
+            filtered_hierarchy: true,
             active_selection: None,
             selected_entities: Vec::new(),
             new_selection: None,
@@ -95,7 +95,7 @@ pub fn update_node_tree_tabs_system(
             data.active_selection = active_selection.get_single().ok();
             data.selected_entities = all_selected.iter().collect();
 
-            let (entities_changed, data_changed, hierarchy_changed) = if data.filterd_hierarchy {
+            let (entities_changed, data_changed, hierarchy_changed) = if data.filtered_hierarchy {
                 let q = hierarchy_query
                     .iter()
                     .filter(|(_, _, _, _, a)| !(a.0 || a.1 || a.2))
@@ -111,7 +111,7 @@ pub fn update_node_tree_tabs_system(
             };
 
             if entities_changed || data_changed || hierarchy_changed {
-                if data.filterd_hierarchy {
+                if data.filtered_hierarchy {
                     let q = hierarchy_query
                         .iter()
                         .filter(|(_, _, _, _, a)| !(a.0 || a.1 || a.2))

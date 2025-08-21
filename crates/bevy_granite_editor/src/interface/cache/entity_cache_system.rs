@@ -30,6 +30,16 @@ pub fn update_entity_cache_system(world: &mut World) {
     let mut query = world.query::<EntityCacheQueryItem>();
     let gizmo_drag = world.resource::<DragState>();
     let component_editor = world.resource::<ComponentEditor>();
+    let filter = world
+        .resource::<crate::interface::SideDockState>()
+        .dock_state
+        .iter_all_tabs()
+        .any(|(_, tab)| match tab {
+            crate::interface::panels::right_panel::SideTab::NodeTree { data } => {
+                data.filtered_hierarchy
+            }
+            _ => false,
+        });
 
     let maybe_new_data = if let Some((
         entity,
@@ -41,7 +51,7 @@ pub fn update_entity_cache_system(world: &mut World) {
         _active,
     )) = query.iter(world).next()
     {
-        let new_registered = component_editor.get_reflected_components(world, entity);
+        let new_registered = component_editor.get_reflected_components(world, entity, filter);
         // Use GlobalTransform for UI display (world position), but keep local transform for editing
         let global = global_transform.compute_transform();
 

@@ -93,6 +93,7 @@ impl ComponentEditor {
         &self,
         world: &World,
         entity: Entity,
+        filter: bool,
     ) -> Vec<ReflectedComponent> {
         let mut components = Vec::new();
 
@@ -106,7 +107,7 @@ impl ComponentEditor {
             if let Some(type_id) = component_info.type_id() {
                 if let Some(registration) = type_registry.get(type_id) {
                     let type_name = registration.type_info().type_path();
-                    if self.should_skip_component(registration) {
+                    if filter && self.should_skip_component(registration) {
                         continue;
                     }
                     if let Some(reflect_component) = registration.data::<ReflectComponent>() {
