@@ -3,7 +3,7 @@ use bevy::{
     ecs::schedule::IntoScheduleConfigs,
     prelude::{App, Plugin, PreStartup},
 };
-use bevy_egui::EguiPlugin;
+use bevy_egui::{EguiGlobalSettings, EguiPlugin};
 use bevy_granite_logging::setup_logging;
 use bevy_obj::ObjPlugin;
 use setup::{gather_registered_types, setup_component_editor};
@@ -61,6 +61,10 @@ impl Plugin for BevyGraniteCore {
             //
             // External
             .add_plugins(ObjPlugin)
+            .insert_resource(EguiGlobalSettings {
+                auto_create_primary_context: false,
+                ..Default::default()
+            })
             .add_plugins(EguiPlugin::default()) // for UserInput checking if we are over Egui. Ideally a better solution is available as this is the core crate that doest use UI
             // Internal
             .add_plugins(EntityPlugin)

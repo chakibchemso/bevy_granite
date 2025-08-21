@@ -23,6 +23,7 @@ use bevy::{
     ecs::schedule::IntoScheduleConfigs,
     prelude::{App, Handle, Mesh, Plugin, StandardMaterial, Update},
 };
+use bevy_egui::EguiPrimaryContextPass;
 
 pub struct InterfacePlugin;
 impl Plugin for InterfacePlugin {
@@ -65,7 +66,7 @@ impl Plugin for InterfacePlugin {
             // Schedule systems
             //
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 (
                     //
                     // Handle UI requests to update entities
