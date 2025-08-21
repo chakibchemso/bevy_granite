@@ -178,11 +178,13 @@ impl OBJ {
         (
             transform,
             Mesh3d(mesh_handle),
-            obj.material
-                .current
-                .handle
-                .clone()
-                .expect("This obj should always have a handle"),
+            MeshMaterial3d(
+                obj.material
+                    .current
+                    .handle
+                    .clone()
+                    .expect("This obj should always have a handle"),
+            ),
             Name::new(identity.name.clone()),
             HasRuntimeData,
             GraniteEditorSerdeEntity,

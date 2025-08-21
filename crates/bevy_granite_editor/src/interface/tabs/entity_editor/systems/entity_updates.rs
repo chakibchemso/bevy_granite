@@ -200,9 +200,9 @@ pub fn update_entity_with_new_identity_system(
 
                     if target_data.current.is_empty() {
                         // adding a 0 handle so it looks pink as a visual placeholder. For truly a "None" material, remove these 2 calls
-                        let none_handle = MeshMaterial3d::<StandardMaterial>::default();
+                        let none_handle = Handle::<StandardMaterial>::default();
                         target_data.current.set_handle(Some(none_handle.clone()));
-                        commands.entity(entity).insert(none_handle);
+                        commands.entity(entity).insert(MeshMaterial3d(none_handle));
                         log!(
                             LogType::Editor,
                             LogLevel::Info,
@@ -315,7 +315,7 @@ fn handle_material_update(
             fields: vec![EditableMaterialField::BaseColor].into(),
             disk_changes: true,
             new_material: true,
-            handle: Some(MeshMaterial3d(materials.add(default_material.clone()))),
+            handle: Some(materials.add(default_material.clone())),
             version: 0,
         };
 
@@ -350,7 +350,7 @@ fn handle_material_update(
         // Update material handle if both handles exist
         if let Some(ref handle) = target_material.handle {
             if let Some(ref mut mat_handle) = material_handle {
-                **mat_handle = handle.clone();
+                mat_handle.0 = handle.clone();
             }
         }
 
@@ -390,7 +390,7 @@ fn handle_material_update(
         // Update entity's material handle and send event
         if let Some(updated_handle) = &target_material.handle {
             if let Some(ref mut handle) = material_handle {
-                **handle = updated_handle.clone();
+                handle.0 = updated_handle.clone();
             }
             log!(
                 LogType::Editor,

@@ -152,7 +152,7 @@ pub enum EditableMaterialError {
 pub struct EditableMaterial {
     pub path: String,
     pub friendly_name: String,
-    pub handle: Option<MeshMaterial3d<StandardMaterial>>,
+    pub handle: Option<Handle<StandardMaterial>>,
     pub def: Option<StandardMaterialDef>,
     pub fields: Option<Vec<EditableMaterialField>>,
     pub version: u32, // local editor version
@@ -166,7 +166,7 @@ impl Default for EditableMaterial {
         Self {
             path: String::new(),
             friendly_name: String::new(),
-            handle: Some(MeshMaterial3d::<StandardMaterial>::default()),
+            handle: Some(Handle::<StandardMaterial>::default()),
             def: None,
             fields: None,
             version: 0,
@@ -181,7 +181,7 @@ impl EditableMaterial {
     pub fn set_to_empty(&mut self) {
         self.path = String::new();
         self.friendly_name = String::new();
-        self.handle = Some(MeshMaterial3d::<StandardMaterial>::default());
+        self.handle = Some(Handle::<StandardMaterial>::default());
         self.def = None;
         self.fields = None;
         self.version = 0;
@@ -197,7 +197,7 @@ impl EditableMaterial {
             || self.friendly_name == "Empty".to_string()
     }
 
-    pub fn set_handle(&mut self, handle: Option<MeshMaterial3d<StandardMaterial>>) {
+    pub fn set_handle(&mut self, handle: Option<Handle<StandardMaterial>>) {
         self.handle = handle.clone()
     }
 
@@ -856,7 +856,7 @@ impl EditableMaterial {
         Self {
             path: "".to_string(),
             friendly_name: "".to_string(),
-            handle: Some(MeshMaterial3d::<StandardMaterial>::default()),
+            handle: Some(Handle::<StandardMaterial>::default()),
             def: Some(default_material_def),
             fields: Some(vec![EditableMaterialField::BaseColor]),
             version: 0,

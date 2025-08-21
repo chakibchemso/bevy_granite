@@ -136,12 +136,14 @@ impl RectBrush {
         (
             transform,
             Mesh3d(rect_handle),
-            rectangle_brush
-                .material
-                .current
-                .handle
-                .clone()
-                .expect("Default material should always have a handle"),
+            MeshMaterial3d(
+                rectangle_brush
+                    .material
+                    .current
+                    .handle
+                    .clone()
+                    .expect("Default material should always have a handle"),
+            ),
             Name::new(identity.name.clone()),
             HasRuntimeData,
             GraniteEditorSerdeEntity,
