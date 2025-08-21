@@ -425,6 +425,20 @@ pub fn debug_handle_rotate_dragging<const AXIS: char>(
     *accrued = Vec2::ZERO;
     let delta_x = x_step.to_radians();
     let delta_y = y_step.to_radians();
+    let delta_z = if x_step.abs() > y_step.abs() {
+        delta_x
+    } else {
+        delta_y
+    };
+    let Ok(target) = targets.get(drag.target) else {
+        log(
+            LogType::Editor,
+            LogLevel::Error,
+            LogCategory::Debug,
+            format!("Rotaion Gizmo({})'s Target not found", drag.target.index()),
+        );
+        return;
+    };
     match gizmo_axis {
         GizmoAxis::All => {
             if let Ok(camera_transform) = camera_query.single() {
@@ -435,19 +449,25 @@ pub fn debug_handle_rotate_dragging<const AXIS: char>(
 
                 // Apply rotation to each entity independently
                 // apply_independent_rotation(&mut queries, &all_selected_entities, rotation_delta);
-                let Ok(target) = targets.get(drag.target) else {
-                    log(
-                        LogType::Editor,
-                        LogLevel::Error,
-                        LogCategory::Debug,
-                        format!("Rotaion Gizmo({})'s Target not found", drag.target.index()),
-                    );
-                    return;
-                };
 
                 if let Ok(mut transform) = objects.get_mut(**target) {
                     transform.rotate(rotation_delta);
                 }
+            }
+        }
+        GizmoAxis::X => {
+            if let Ok(mut transform) = objects.get_mut(**target) {
+                transform.rotate(Quat::from_axis_angle(Vec3::X, delta_z));
+            }
+        }
+        GizmoAxis::Y => {
+            if let Ok(mut transform) = objects.get_mut(**target) {
+                transform.rotate(Quat::from_axis_angle(Vec3::Y, delta_z));
+            }
+        }
+        GizmoAxis::Z => {
+            if let Ok(mut transform) = objects.get_mut(**target) {
+                transform.rotate(Quat::from_axis_angle(Vec3::Z, delta_z));
             }
         }
         _ => {

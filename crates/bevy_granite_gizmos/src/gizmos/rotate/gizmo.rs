@@ -17,6 +17,7 @@ use bevy_granite_logging::{
     log,
 };
 
+use crate::gizmos::rotate::gizmo;
 use crate::gizmos::GizmoOf;
 use crate::{
     gizmos::{GizmoMesh, GizmoParent},
@@ -114,7 +115,7 @@ pub fn spawn_rotate_gizmo(
             meshes,
         );
 
-        build_axis_ring(
+        build_axis_ring::<'x'>(
             parent,
             commands,
             materials,
@@ -123,7 +124,7 @@ pub fn spawn_rotate_gizmo(
             Color::srgba(1., 0., 0., 1.0),
         );
 
-        build_axis_ring(
+        build_axis_ring::<'y'>(
             parent,
             commands,
             materials,
@@ -132,7 +133,7 @@ pub fn spawn_rotate_gizmo(
             Color::srgba(0., 1., 0., 1.),
         );
 
-        build_axis_ring(
+        build_axis_ring::<'z'>(
             parent,
             commands,
             materials,
@@ -209,7 +210,7 @@ fn build_free_sphere(
         .observe(super::drag::debug_handle_rotate_dragging::<'a'>);
 }
 
-fn build_axis_ring(
+fn build_axis_ring<const C: char>(
     target: Entity,
     commands: &mut Commands,
     materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -241,22 +242,24 @@ fn build_axis_ring(
         _ => Quat::IDENTITY,
     };
 
-    commands.spawn((
-        Mesh3d(ring_mesh),
-        MeshMaterial3d(material.clone()),
-        Transform {
-            scale: Vec3::ONE * GIZMO_SCALE,
-            rotation,
-            ..Default::default()
-        },
-        NotShadowCaster,
-        NotShadowReceiver,
-        Name::new("Gizmo Rotate Ring"),
-        RenderLayers::layer(14), // 14 is our UI/Gizmo layer.
-        gizmo_axis,
-        RotateGizmo,
-        GizmoMesh,
-        GizmoOf(target),
-        ChildOf(parent),
-    ));
+    commands
+        .spawn((
+            Mesh3d(ring_mesh),
+            MeshMaterial3d(material.clone()),
+            Transform {
+                scale: Vec3::ONE * GIZMO_SCALE,
+                rotation,
+                ..Default::default()
+            },
+            NotShadowCaster,
+            NotShadowReceiver,
+            Name::new("Gizmo Rotate Ring"),
+            RenderLayers::layer(14), // 14 is our UI/Gizmo layer.
+            gizmo_axis,
+            RotateGizmo,
+            GizmoMesh,
+            GizmoOf(target),
+            ChildOf(parent),
+        ))
+        .observe(super::drag::debug_handle_rotate_dragging::<C>);
 }
