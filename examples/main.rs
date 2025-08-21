@@ -45,11 +45,8 @@ fn main() {
             ..Default::default()
         })
         .add_systems(Startup, setup)
-        .add_systems(First, fix_ctx)
         .run();
 }
-
-fn fix_ctx(has_run: Local<bool>, mut ctx: EguiContexts) {}
 
 fn setup(mut open_event: EventWriter<RequestLoadEvent>) {
     // Event to load a world (.scene)
