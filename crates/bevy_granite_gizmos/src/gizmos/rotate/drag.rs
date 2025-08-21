@@ -13,7 +13,7 @@ use crate::{
     GizmoCamera,
 };
 use bevy::{
-    ecs::{observer::Trigger, query::Changed},
+    ecs::{observer::Trigger, query::Changed, system::Local},
     picking::{
         events::{Drag, Pointer, Pressed},
         hover::PickingInteraction,
@@ -403,12 +403,12 @@ pub fn debug_handle_rotate_dragging<const AXIS: char>(
     mut objects: Query<&mut Transform, Without<GizmoCamera>>,
     gizmo_snap: Res<GizmoSnap>,
     selected: Res<SelectedGizmo>,
+    mut accrued: Local<Vec2>,
 ) {
     let gizmo_distance_scale = selected.speed_scale;
     let free_rotate_speed = 0.3 * gizmo_distance_scale;
     let locked_rotate_speed = 1.15 * gizmo_distance_scale;
 
-    let snap_value = gizmo_snap.rotate_value.to_radians();
     let gizmo_axis = match AXIS {
         'X' | 'x' => GizmoAxis::X,
         'Y' | 'y' => GizmoAxis::Y,
@@ -416,78 +416,49 @@ pub fn debug_handle_rotate_dragging<const AXIS: char>(
         'A' | 'a' => GizmoAxis::All,
         _ => GizmoAxis::All,
     };
-    if gizmo_axis == GizmoAxis::All {
-        let delta_x = drag.delta.x.to_radians();
-        let delta_y = drag.delta.y.to_radians();
-        log(
-            LogType::Editor,
-            LogLevel::Info,
-            LogCategory::Debug,
-            format!("Dragging gizmo: {} - {}", delta_x, delta_y),
-        );
-        if let Ok(camera_transform) = camera_query.single() {
-            let camera_right = camera_transform.right().as_vec3();
-            let camera_up = camera_transform.up().as_vec3();
-            let yaw = delta_x * free_rotate_speed;
-            let pitch = delta_y * free_rotate_speed;
-            let rotation_delta =
-                Quat::from_axis_angle(camera_up, yaw) * Quat::from_axis_angle(camera_right, pitch);
-
-            log(
-                LogType::Editor,
-                LogLevel::Info,
-                LogCategory::Debug,
-                format!("Gizmo delta: {rotation_delta:?}"),
-            );
-
-            // Apply rotation to each entity independently
-            // apply_independent_rotation(&mut queries, &all_selected_entities, rotation_delta);
-            let Ok(target) = targets.get(drag.target) else {
-                log(
-                    LogType::Editor,
-                    LogLevel::Error,
-                    LogCategory::Debug,
-                    format!("Rotaion Gizmo({})'s Target not found", drag.target.index()),
-                );
-                return;
-            };
-
-            if let Ok(mut transform) = objects.get_mut(**target) {
-                let (mut pitch, mut yaw, mut roll) =
-                    transform.rotation.to_euler(bevy::math::EulerRot::XYZ);
-                let (n_pitch, n_yaw, n_roll) = rotation_delta.to_euler(bevy::math::EulerRot::XYZ);
-                let index = drag.target.index();
-                log(
-                    LogType::Editor,
-                    LogLevel::Info,
-                    LogCategory::Debug,
-                    format!("Rotating {index}: {pitch:0?} - {yaw:?} - {roll:?} by {n_pitch:0?} - {n_yaw:?} - {n_roll:?}"),
-                );
-                // pitch += n_pitch;
-                // yaw += n_yaw;
-                // roll += n_roll;
-                transform.rotate(rotation_delta);
-                // transform.rotation = Quat::from_euler(
-                //     bevy::math::EulerRot::XYZ,
-                //     snap_roation(pitch, snap_value),
-                //     snap_roation(yaw, snap_value),
-                //     snap_roation(roll, snap_value),
-                // );
-            }
-
-            // // Update gizmo
-            // let final_rotation = if let Ok((transform, _, _)) = queries.p3().get(selection_entity) {
-            //     transform.rotation
-            // } else {
-            //     Quat::IDENTITY
-            // };
-
-            // if let Ok((_, mut gizmo_transform, _)) = queries.p4().get_single_mut() {
-            //     gizmo_transform.rotation =
-            //         drag_state.initial_gizmo_rotation * final_rotation.inverse();
-            // }
-        }
+    *accrued += drag.delta * free_rotate_speed;
+    if accrued.x.abs() < gizmo_snap.rotate_value && accrued.y.abs() < gizmo_snap.rotate_value {
         return;
+    }
+    let x_step = snap_roation(accrued.x, gizmo_snap.rotate_value);
+    let y_step = snap_roation(accrued.y, gizmo_snap.rotate_value);
+    *accrued = Vec2::ZERO;
+    let delta_x = x_step.to_radians();
+    let delta_y = y_step.to_radians();
+    match gizmo_axis {
+        GizmoAxis::All => {
+            if let Ok(camera_transform) = camera_query.single() {
+                let camera_right = camera_transform.right().as_vec3();
+                let camera_up = camera_transform.up().as_vec3();
+                let rotation_delta = Quat::from_axis_angle(camera_up, delta_x)
+                    * Quat::from_axis_angle(camera_right, delta_y);
+
+                // Apply rotation to each entity independently
+                // apply_independent_rotation(&mut queries, &all_selected_entities, rotation_delta);
+                let Ok(target) = targets.get(drag.target) else {
+                    log(
+                        LogType::Editor,
+                        LogLevel::Error,
+                        LogCategory::Debug,
+                        format!("Rotaion Gizmo({})'s Target not found", drag.target.index()),
+                    );
+                    return;
+                };
+
+                if let Ok(mut transform) = objects.get_mut(**target) {
+                    transform.rotate(rotation_delta);
+                }
+            }
+        }
+        _ => {
+            log!(
+                LogType::Editor,
+                LogLevel::Critical,
+                LogCategory::Debug,
+                "Rotation Gizmo Axis not implemented for axis {:?}",
+                gizmo_axis
+            )
+        }
     }
 }
 
