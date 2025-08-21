@@ -142,7 +142,7 @@ impl Default for PromptData {
 
 // Re-exports
 pub use component_editor::{
-    is_bridge_component_check, BridgeTag, ComponentEditor, ReflectedComponent,
+    is_bridge_component_check, BridgeTag, ComponentEditor, ExposedToEditor, ReflectedComponent,
 };
 pub use deserialize::{deserialize_entities, GraniteEditorSerdeEntity};
 pub use editable::{

@@ -14,8 +14,18 @@ impl<T> FromType<T> for BridgeTag {
         BridgeTag
     }
 }
+
 pub fn is_bridge_component_check(registration: &TypeRegistration) -> bool {
     registration.data::<BridgeTag>().is_some()
+}
+
+#[derive(Clone)]
+pub struct ExposedToEditor {
+    pub read_only: bool,
+}
+
+pub fn is_exposed_bevy_component(registration: &TypeRegistration) -> bool {
+    registration.data::<ExposedToEditor>().is_some()
 }
 
 //
@@ -391,6 +401,6 @@ impl ComponentEditor {
 
     /// Check for bridge tag
     pub fn should_skip_component(&self, registration: &TypeRegistration) -> bool {
-        !is_bridge_component_check(registration)
+        !is_bridge_component_check(registration) && !is_exposed_bevy_component(registration)
     }
 }

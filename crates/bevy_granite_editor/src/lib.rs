@@ -51,5 +51,7 @@ impl Plugin for BevyGraniteEditor {
             // Startup
             //
             .add_systems(PostStartup, (setup_ui_style, editor_info));
+
+        app.add_plugins(bevy_granite_expose::BevyGraniteExposePlugin); // this will register internal bevy components so they can be used in the editor
     }
 }

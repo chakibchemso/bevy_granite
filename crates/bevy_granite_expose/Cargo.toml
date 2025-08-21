@@ -1,0 +1,9 @@
+[package]
+name = "bevy_granite_expose"
+version = "0.1.0"
+edition = "2024"
+description = "Expose Bevy components to the editor"
+
+[dependencies]
+bevy = { workspace = true }
+bevy_granite_core = { path = "../bevy_granite_core" }

@@ -1,4 +1,5 @@
 use crate::{editor_state::INPUT_CONFIG, viewport::camera::CameraTarget};
+use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::{
     core_pipeline::core_3d::Camera3d,
     input::mouse::{MouseMotion, MouseWheel},
@@ -18,6 +19,7 @@ pub fn add_ui_camera(mut commands: Commands) {
             Transform::from_xyz(2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             Camera3d::default(),
             Name::new("UI Camera"),
+            Tonemapping::None, // need this so bevy rendering doesnt break without tonemapping_luts
         ))
         .insert(Camera {
             order: 2,
