@@ -1,5 +1,5 @@
 use super::camera::{
-    add_gizmo_camera, camera_frame_system, camera_sync_toggle_system, mouse_button_iter,
+    add_ui_camera, camera_frame_system, camera_sync_toggle_system, mouse_button_iter,
     sync_cameras_system, CameraSyncState, CameraTarget, InputState,
 };
 use crate::{
@@ -63,7 +63,7 @@ impl Plugin for ViewportPlugin {
             .add_systems(
                 Startup,
                 (
-                    add_gizmo_camera,
+                    add_ui_camera,
                     ApplyDeferred,
                     bevy_egui::update_ui_size_and_scale_system,
                 )

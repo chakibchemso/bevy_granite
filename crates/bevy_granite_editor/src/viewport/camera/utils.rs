@@ -10,7 +10,7 @@ use bevy::{
 };
 use bevy_granite_core::{TreeHiddenEntity, UICamera, UserInput};
 
-pub fn add_gizmo_camera(mut commands: Commands) {
+pub fn add_ui_camera(mut commands: Commands) {
     let context = bevy_egui::EguiContext::default();
 
     let _ui_camera = commands
