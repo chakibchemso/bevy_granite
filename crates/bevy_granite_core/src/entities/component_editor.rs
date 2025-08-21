@@ -101,11 +101,21 @@ impl ComponentEditor {
                     }
                     if let Some(reflect_component) = registration.data::<ReflectComponent>() {
                         if let Some(reflected) = reflect_component.reflect(entity_ref) {
-                            components.push(ReflectedComponent {
-                                type_name: type_name.to_string(),
-                                reflected_data: reflected.clone_value(),
-                                type_registration: registration.clone(),
-                            });
+                            if let Ok(clone) = reflected.reflect_clone() {
+                                components.push(ReflectedComponent {
+                                    type_name: type_name.to_string(),
+                                    reflected_data: clone,
+                                    type_registration: registration.clone(),
+                                });
+                            } else {
+                                log!(
+                                    LogType::Editor,
+                                    LogLevel::Error,
+                                    LogCategory::Entity,
+                                    "Failed to clone reflected data for component: {}",
+                                    type_name
+                                );
+                            }
                         }
                     }
                 } else {
