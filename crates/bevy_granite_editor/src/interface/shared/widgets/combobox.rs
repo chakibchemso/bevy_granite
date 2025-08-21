@@ -74,6 +74,7 @@ fn generic_selector_popup<T: SelectableItem>(
     let mut popup_changed = false;
 
     if ui.memory(|mem| mem.is_popup_open(popup_id)) {
+        ui.memory_mut(|mem| mem.keep_popup_open(popup_id));
         let popup_pos = button_response.rect.left_bottom() + egui::vec2(0.0, 4.0);
 
         let area_response = egui::Area::new(popup_id)
