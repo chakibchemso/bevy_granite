@@ -296,7 +296,7 @@ fn combobox_style_button(ui: &mut Ui, button_text: &str) -> Response {
             text_color,
         );
 
-        paint_dropdown_arrow(ui, icon_rect, &visuals);
+        paint_dropdown_arrow(ui, icon_rect, visuals);
     }
 
     response

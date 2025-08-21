@@ -26,7 +26,7 @@ pub fn show_camera_forward_system(
     }
     for (entity, global_transform, _camera) in query.iter() {
         if config.debug_selected_only {
-            match active_query.get_single() {
+            match active_query.single() {
                 Ok(selected_entity) if selected_entity != entity => continue,
                 Err(_) => return,
                 _ => {}

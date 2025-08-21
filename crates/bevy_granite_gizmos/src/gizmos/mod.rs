@@ -1,4 +1,7 @@
-use bevy::ecs::{component::Component, resource::Resource};
+use bevy::{
+    ecs::{component::Component, resource::Resource},
+    prelude::{Deref, DerefMut},
+};
 
 pub mod distance_scaling;
 pub mod events;
@@ -16,8 +19,11 @@ pub enum GizmoType {
     None,
 }
 
-#[derive(Resource)]
-pub struct SelectedGizmo {
+#[derive(Resource, Deref, DerefMut)]
+pub struct SelectedGizmo(GizmoConfig);
+
+#[derive(Component)]
+pub struct GizmoConfig {
     pub value: GizmoType,
     pub speed_scale: f32,
     pub distance_scale: f32,
@@ -39,6 +45,15 @@ pub struct GizmoSnap {
     pub rotate_value: f32,
     pub transform_value: f32,
 }
+
+#[derive(Component, Deref)]
+#[relationship(relationship_target = Gizmos)]
+#[require(crate::utils::EditorIgnore)]
+pub struct GizmoOf(pub bevy::ecs::entity::Entity);
+
+#[derive(Component)]
+#[relationship_target(relationship = GizmoOf)]
+pub struct Gizmos(Vec<bevy::ecs::entity::Entity>);
 
 pub use distance_scaling::scale_gizmo_by_camera_distance_system;
 pub use events::{

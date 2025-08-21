@@ -16,13 +16,20 @@ pub fn node_tree_tab_ui(ui: &mut egui::Ui, data: &mut NodeTreeTabData) {
         ui.label("🔍");
         ui.add_space(large_spacing);
 
-        let text_edit_id = egui::Id::new(format!("node_tree_search"));
+        let text_edit_id = egui::Id::new("node_tree_search");
         let _search_response = ui.add(
             egui::TextEdit::singleline(&mut data.search_filter)
                 .id(text_edit_id)
                 //.desired_width(ui.available_width() - large_spacing)
                 .hint_text("Find entity..."),
         );
+        ui.add_space(spacing);
+        ui.weak("curated: ");
+        let _check_response = ui
+            .checkbox(&mut data.filtered_hierarchy, ())
+            .on_hover_ui(|ui| {
+                ui.label("Toggle visibility of editor-related entities");
+            });
     });
     ui.add_space(spacing);
     ui.separator();
@@ -129,6 +136,7 @@ pub fn display_entity_tree(ui: &mut egui::Ui, data: &mut NodeTreeTabData) {
                     data,
                     0,
                     &search_term,
+                    !data.filtered_hierarchy,
                 );
             }
         }
@@ -154,6 +162,7 @@ pub fn display_entity_tree(ui: &mut egui::Ui, data: &mut NodeTreeTabData) {
                 data,
                 0,
                 &search_term,
+                !data.filtered_hierarchy,
             );
         }
         ui.separator();
@@ -304,6 +313,7 @@ fn render_tree_node(
     data: &mut NodeTreeTabData,
     indent_level: usize,
     search_term: &str,
+    verbose: bool,
 ) {
     let spacing = crate::UI_CONFIG.spacing;
     let selected_entity = data.active_selection;
@@ -364,13 +374,19 @@ fn render_tree_node(
         let visuals = ui.visuals().clone();
         let style_visuals = ui.style().visuals.clone();
 
-        ui.columns(2, |columns| {
+        ui.columns(3, |columns| {
             let (name_text, type_text) =
                 create_highlighted_text(name, entity_type, search_term, &columns[0]);
+
             let name_button =
                 create_name_button(&name_text, &visuals, is_selected, is_active_selected);
 
             let button_response = columns[0].add(name_button);
+            if verbose {
+                let label = bevy_egui::egui::Label::new(format!("Entity: {}", entity.index()))
+                    .halign(egui::Align::Center);
+                columns[1].add(label);
+            }
 
             // Create a combined click and drag interaction over the same area
             let combined_response = columns[0].interact(
@@ -386,7 +402,7 @@ fn render_tree_node(
             // Handle drag and drop using the combined_response
             handle_drag_and_drop(&combined_response, entity, data, search_term);
 
-            columns[1].with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            columns[2].with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.add_space(spacing);
 
                 if is_selected || is_active_selected {
@@ -465,6 +481,7 @@ fn render_children(
                         data,
                         indent_level + 1,
                         search_term,
+                        !data.filtered_hierarchy,
                     );
                 }
             });

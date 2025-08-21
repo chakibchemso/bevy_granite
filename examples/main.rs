@@ -1,5 +1,5 @@
 // main.rs - bevy 0.14
-use bevy::prelude::*;
+use bevy::{input::keyboard::Key, prelude::*};
 use bevy_granite::prelude::*;
 use bevy_inspector_egui::bevy_egui::{EguiContext, EguiContexts}; // Import the Granite plugin prelude
 
@@ -45,11 +45,48 @@ fn main() {
             ..Default::default()
         })
         .add_systems(Startup, setup)
+        .add_systems(Update, print_cube_color)
         .run();
 }
 
 fn setup(mut open_event: EventWriter<RequestLoadEvent>) {
     // Event to load a world (.scene)
     // When finished loading it will send a `WorldLoadSuccessEvent` with the loaded world str name
-    open_event.send(RequestLoadEvent(STARTING_WORLD.to_string()));
+    open_event.write(RequestLoadEvent(STARTING_WORLD.to_string()));
+}
+
+fn test_cube(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    commands.spawn((
+        Camera3d::default(),
+        Transform::from_translation(Vec3::ONE * 5.).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
+    // Create a simple cube with a material
+    let mesh = meshes.add(Cuboid::from_length(1.));
+    let material = materials.add(StandardMaterial {
+        base_color: Color::WHITE,
+        ..Default::default()
+    });
+
+    commands.spawn((Mesh3d(mesh), MeshMaterial3d(material)));
+}
+
+fn print_cube_color(
+    input: Res<ButtonInput<KeyCode>>,
+    query: Query<&MeshMaterial3d<StandardMaterial>>,
+    materials: Res<Assets<StandardMaterial>>,
+) {
+    if !input.just_pressed(KeyCode::F12) {
+        return;
+    }
+    for mesh_material in query.iter() {
+        if let Some(material) = materials.get(&mesh_material.0) {
+            println!("Cube color: {:?}", material.base_color);
+        } else {
+            println!("Material not found for handle: {:?}", mesh_material.0);
+        }
+    }
 }

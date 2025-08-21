@@ -10,6 +10,7 @@ use bevy::{
     render::view::RenderLayers,
 };
 use bevy_granite_core::{TreeHiddenEntity, UICamera, UserInput};
+use bevy_granite_gizmos::utils::EditorIgnore;
 
 pub fn add_ui_camera(mut commands: Commands) {
     let context = bevy_egui::EguiContext::default();
@@ -20,6 +21,12 @@ pub fn add_ui_camera(mut commands: Commands) {
             Camera3d::default(),
             Name::new("UI Camera"),
             Tonemapping::None, // need this so bevy rendering doesnt break without tonemapping_luts
+            bevy::picking::Pickable {
+                // this is so it does not block any other objects
+                should_block_lower: false,
+                is_hoverable: false,
+            },
+            EditorIgnore, // This camera should not be selectable in the editor
         ))
         .insert(Camera {
             order: 2,
