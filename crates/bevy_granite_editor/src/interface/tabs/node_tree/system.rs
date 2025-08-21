@@ -1,6 +1,7 @@
 use super::ui::expand_to_entity;
 use crate::interface::events::RequestRemoveParentsFromEntities;
 use crate::interface::{SideDockState, SideTab};
+use bevy::ecs::query::Has;
 use bevy::{
     ecs::query::{Changed, Or},
     prelude::{ChildOf, Entity, Event, EventWriter, Name, Query, ResMut, With, Without},
@@ -18,8 +19,9 @@ pub struct RequestReparentEntityEvent {
     pub new_parent: Entity,    // The target parent entity
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NodeTreeTabData {
+    pub filterd_hierarchy: bool, // whether the hierarchy shows all entities or hides editor related ones
     pub active_selection: Option<Entity>,
     pub selected_entities: Vec<Entity>,
     pub new_selection: Option<Entity>,
@@ -35,6 +37,26 @@ pub struct NodeTreeTabData {
     pub drop_target: Option<Entity>,       // Entity being dropped onto
 }
 
+impl Default for NodeTreeTabData {
+    fn default() -> Self {
+        Self {
+            filterd_hierarchy: true,
+            active_selection: None,
+            selected_entities: Vec::new(),
+            new_selection: None,
+            additive_selection: false,
+            range_selection: false,
+            clicked_via_node_tree: false,
+            tree_click_frames_remaining: 0,
+            hierarchy: Vec::new(),
+            should_scroll_to_selection: false,
+            previous_active_selection: None,
+            search_filter: String::new(),
+            drag_payload: None,
+            drop_target: None,
+        }
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 pub struct HierarchyEntry {
     pub entity: Entity,
@@ -48,23 +70,18 @@ pub fn update_node_tree_tabs_system(
     mut right_dock: ResMut<SideDockState>,
     active_selection: Query<Entity, With<ActiveSelection>>,
     all_selected: Query<Entity, With<Selected>>,
-    hierarchy_query: Query<
-        (Entity, &Name, Option<&ChildOf>, Option<&IdentityData>),
-        (
-            Without<GizmoParent>,
-            Without<GizmoMesh>,
-            Without<TreeHiddenEntity>,
-        ),
-    >,
-    // detect changes (excluding Parent since we check that manually)
-    changed_hierarchy: Query<
+    mut hierarchy_query: Query<(
         Entity,
-        (
-            Or<(Changed<Name>, Changed<IdentityData>)>,
-            Without<GizmoParent>,
-            Without<GizmoMesh>,
-            Without<TreeHiddenEntity>,
-        ),
+        &Name,
+        Option<&ChildOf>,
+        Option<&IdentityData>,
+        (Has<GizmoParent>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
+    )>,
+
+    // detect changes (excluding Parent since we check that manually)
+    mut changed_hierarchy: Query<
+        (Has<GizmoParent>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
+        Or<(Changed<Name>, Changed<IdentityData>)>,
     >,
     mut select_event_writer: EventWriter<RequestSelectEntityEvent>,
     mut deselect_event_writer: EventWriter<RequestDeselectEntityEvent>,
@@ -78,11 +95,32 @@ pub fn update_node_tree_tabs_system(
             data.active_selection = active_selection.get_single().ok();
             data.selected_entities = all_selected.iter().collect();
 
-            let (entities_changed, data_changed, hierarchy_changed) =
-                detect_changes(&hierarchy_query, &changed_hierarchy, data);
+            let (entities_changed, data_changed, hierarchy_changed) = if data.filterd_hierarchy {
+                let q = hierarchy_query
+                    .iter()
+                    .filter(|(_, _, _, _, a)| !(a.0 || a.1 || a.2))
+                    .map(|(a, b, c, d, _)| (a, b, c, d));
+                let c = changed_hierarchy
+                    .iter()
+                    .any(|filter| !(filter.0 || filter.1 || filter.2));
+                detect_changes(q, c, data)
+            } else {
+                let q = hierarchy_query.iter().map(|(a, b, c, d, _)| (a, b, c, d));
+                let c = !changed_hierarchy.is_empty();
+                detect_changes(q, c, data)
+            };
 
             if entities_changed || data_changed || hierarchy_changed {
-                update_hierarchy_data(data, &hierarchy_query, hierarchy_changed);
+                if data.filterd_hierarchy {
+                    let q = hierarchy_query
+                        .iter()
+                        .filter(|(_, _, _, _, a)| !(a.0 || a.1 || a.2))
+                        .map(|(a, b, c, d, _)| (a, b, c, d));
+                    update_hierarchy_data(data, q, hierarchy_changed);
+                } else {
+                    let q = hierarchy_query.iter().map(|(a, b, c, d, _)| (a, b, c, d));
+                    update_hierarchy_data(data, q, hierarchy_changed);
+                }
             }
 
             // Check if selection changed externally
@@ -278,39 +316,35 @@ pub fn is_descendant_of(
     false
 }
 
-fn detect_changes(
-    hierarchy_query: &Query<
-        (Entity, &Name, Option<&ChildOf>, Option<&IdentityData>),
-        (
-            Without<GizmoParent>,
-            Without<GizmoMesh>,
-            Without<TreeHiddenEntity>,
-        ),
-    >,
-    changed_hierarchy: &Query<
-        Entity,
-        (
-            Or<(Changed<Name>, Changed<IdentityData>)>,
-            Without<GizmoParent>,
-            Without<GizmoMesh>,
-            Without<TreeHiddenEntity>,
-        ),
-    >,
+fn detect_changes<'a>(
+    hierarchy_query: impl Iterator<
+            Item = (
+                Entity,
+                &'a Name,
+                Option<&'a ChildOf>,
+                Option<&'a IdentityData>,
+            ),
+        > + Clone,
+    changed_hierarchy: bool,
     data: &NodeTreeTabData,
 ) -> (bool, bool, bool) {
     use std::collections::HashSet;
 
-    let current_entities: HashSet<Entity> = hierarchy_query.iter().map(|(e, _, _, _)| e).collect();
+    let current_entities: HashSet<Entity> = hierarchy_query
+        .clone()
+        .into_iter()
+        .map(|(e, _, _, _)| e)
+        .collect();
     let existing_entities: HashSet<Entity> =
         data.hierarchy.iter().map(|entry| entry.entity).collect();
 
     // Check if entities changed OR if any existing entity had its data changed OR if parent relationships changed
     let entities_changed = current_entities != existing_entities;
-    let data_changed = !changed_hierarchy.is_empty();
+    let data_changed = changed_hierarchy;
 
     // Also check if any parent relationships changed by comparing current vs stored hierarchy
     let hierarchy_changed = if !entities_changed {
-        hierarchy_query.iter().any(|(entity, _, parent, _)| {
+        hierarchy_query.into_iter().any(|(entity, _, parent, _)| {
             if let Some(entry) = data.hierarchy.iter().find(|e| e.entity == entity) {
                 let current_parent = parent.map(|p| p.get());
                 entry.parent != current_parent
@@ -375,14 +409,14 @@ fn build_visual_order(hierarchy: &[HierarchyEntry]) -> Vec<Entity> {
     visual_order
 }
 
-fn update_hierarchy_data(
+fn update_hierarchy_data<'a>(
     data: &mut NodeTreeTabData,
-    hierarchy_query: &Query<
-        (Entity, &Name, Option<&ChildOf>, Option<&IdentityData>),
-        (
-            Without<GizmoParent>,
-            Without<GizmoMesh>,
-            Without<TreeHiddenEntity>,
+    hierarchy_query: impl IntoIterator<
+        Item = (
+            Entity,
+            &'a Name,
+            Option<&'a ChildOf>,
+            Option<&'a IdentityData>,
         ),
     >,
     hierarchy_changed: bool,
@@ -404,7 +438,7 @@ fn update_hierarchy_data(
         .collect();
 
     let mut hierarchy_entries: Vec<HierarchyEntry> = hierarchy_query
-        .iter()
+        .into_iter()
         .map(|(entity, name, parent, identity)| HierarchyEntry {
             entity,
             name: name.to_string(),
