@@ -26,7 +26,7 @@ pub fn show_directional_light_forward_system(
     }
     for (entity, global_transform, _directional_light) in query.iter() {
         if config.debug_selected_only {
-            match active_query.get_single() {
+            match active_query.single() {
                 Ok(selected_entity) if selected_entity != entity => continue,
                 Err(_) => return,
                 _ => {}
@@ -40,7 +40,7 @@ pub fn show_directional_light_forward_system(
         gizmos.arrow(start, end, color);
 
         let sun_radius = 0.3;
-        gizmos.circle(start, Dir3::from(forward), sun_radius, color);
+        gizmos.circle(start, sun_radius, color);
     }
 }
 
@@ -59,16 +59,15 @@ pub fn show_point_light_range_system(
     }
     for (entity, global_transform, point_light) in query.iter() {
         if config.debug_selected_only {
-            match active_query.get_single() {
+            match active_query.single() {
                 Ok(selected_entity) if selected_entity != entity => continue,
                 Err(_) => return,
                 _ => {}
             }
         }
         let range = point_light.range;
-        let pos = global_transform.translation();
-        let rot = global_transform.to_scale_rotation_translation().1;
+        let pos = global_transform.to_isometry();
         let color = Color::srgb_from_array(config.debug_color);
-        gizmos.sphere(pos, rot, range, color);
+        gizmos.sphere(pos, range, color);
     }
 }

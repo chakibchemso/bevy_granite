@@ -5,16 +5,16 @@ use crate::{
 };
 use bevy::{
     asset::{AssetServer, Assets},
-    core::Name,
     ecs::{
         bundle::Bundle,
         entity::Entity,
         system::{Commands, Res, ResMut},
     },
     math::{Vec2, Vec3},
-    pbr::{PbrBundle, StandardMaterial},
+    pbr::{MeshMaterial3d, StandardMaterial},
+    prelude::Name,
     render::{
-        mesh::{Indices, Mesh, PrimitiveTopology},
+        mesh::{Indices, Mesh, Mesh3d, PrimitiveTopology},
         render_asset::RenderAssetUsages,
     },
     transform::components::Transform,
@@ -134,17 +134,16 @@ impl RectBrush {
         let rect_handle = meshes.add(rect_mesh);
 
         (
-            PbrBundle {
-                transform,
-                mesh: rect_handle,
-                material: rectangle_brush
+            transform,
+            Mesh3d(rect_handle),
+            MeshMaterial3d(
+                rectangle_brush
                     .material
                     .current
                     .handle
                     .clone()
                     .expect("Default material should always have a handle"),
-                ..Default::default()
-            },
+            ),
             Name::new(identity.name.clone()),
             HasRuntimeData,
             GraniteEditorSerdeEntity,

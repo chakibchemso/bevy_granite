@@ -1,5 +1,5 @@
 use bevy::{
-    ecs::{component::Component, system::Resource},
+    ecs::{component::Component, resource::Resource},
     math::{bool, Quat, Vec2, Vec3},
 };
 

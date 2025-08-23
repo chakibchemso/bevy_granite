@@ -2,7 +2,7 @@ use super::{watch_gizmo_change, DragState};
 use crate::{is_gizmos_active, GizmoVisibilityState};
 use bevy::{
     app::{App, Plugin, Update},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
 };
 
 pub struct InputPlugin;

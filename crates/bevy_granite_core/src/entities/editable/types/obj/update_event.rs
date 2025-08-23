@@ -16,8 +16,8 @@ impl OBJ {
             "Requesting OBJ entity update"
         );
 
-        request_update.obj.send(UserUpdatedOBJEvent {
-            entity: entity,
+        request_update.obj.write(UserUpdatedOBJEvent {
+            entity,
             data: self.clone(),
         });
     }

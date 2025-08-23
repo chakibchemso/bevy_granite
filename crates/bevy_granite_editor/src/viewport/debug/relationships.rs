@@ -4,7 +4,7 @@ use bevy::{
     color::Color,
     ecs::{entity::Entity, system::Query},
     gizmos::gizmos::Gizmos,
-    hierarchy::{Children, Parent},
+    prelude::{ChildOf, Children},
     prelude::{Res, With, Without},
     transform::components::GlobalTransform,
 };
@@ -14,7 +14,7 @@ use bevy_granite_gizmos::{ActiveSelection, GizmoMesh};
 pub fn relationship_line_system(
     mut gizmos: Gizmos<DebugRenderer>,
     parent_query: Query<
-        (Entity, &GlobalTransform, &Parent),
+        (Entity, &GlobalTransform, &ChildOf),
         (Without<GizmoMesh>, Without<IconProxy>),
     >,
     active_query: Query<Entity, With<ActiveSelection>>,

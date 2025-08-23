@@ -51,7 +51,7 @@ pub fn dock_ui_system(
     editor_state: Res<EditorState>,
     user_input: Res<UserInput>,
 ) {
-    let ctx = contexts.ctx_mut();
+    let ctx = contexts.ctx_mut().expect("Egui context to exist");
     let screen_rect = ctx.screen_rect();
     let screen_width = screen_rect.width();
     let screen_height = screen_rect.height();

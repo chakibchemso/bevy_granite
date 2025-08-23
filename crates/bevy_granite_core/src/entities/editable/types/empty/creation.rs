@@ -4,9 +4,9 @@ use crate::{
     HasRuntimeData, IdentityData,
 };
 use bevy::{
-    core::Name,
     ecs::{bundle::Bundle, entity::Entity, system::Commands},
-    prelude::SpatialBundle,
+    prelude::Name,
+    render::view::Visibility,
     transform::components::Transform,
 };
 use uuid::Uuid;
@@ -60,10 +60,8 @@ impl Empty {
     /// in this case, its a spatial bundle, so no class data needed
     fn get_bundle(_empty: Empty, identity: IdentityData, transform: Transform) -> impl Bundle {
         (
-            SpatialBundle {
-                transform,
-                ..Default::default()
-            },
+            Visibility::default(),
+            transform,
             Name::new(identity.name.clone()),
             HasRuntimeData,
             GraniteEditorSerdeEntity,

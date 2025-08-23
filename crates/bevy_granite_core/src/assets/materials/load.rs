@@ -2,14 +2,14 @@ use super::{
     AvailableEditableMaterials, EditableMaterial, EditableMaterialError, EditableMaterialField,
     StandardMaterialDef,
 };
+use bevy::image::{
+    ImageAddressMode, ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor,
+};
 use bevy::math::Affine2;
 use bevy::prelude::{
     AlphaMode, AssetServer, Assets, Color, Handle, Image, Res, ResMut, StandardMaterial,
 };
 use bevy::render::render_resource::Face;
-use bevy::render::texture::{
-    ImageAddressMode, ImageFilterMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor,
-};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,

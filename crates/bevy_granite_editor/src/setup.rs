@@ -33,7 +33,7 @@ $$ |  $$ |$$ |     $$  __$$ |$$ |  $$ |$$ |  $$ |$$\ $$   ____|
 }
 
 pub fn setup_ui_style(mut contexts: EguiContexts) {
-    let ctx = contexts.ctx_mut();
+    let ctx = contexts.ctx_mut().expect("Egui context is not available");
 
     let mut style = (*ctx.style()).clone();
 

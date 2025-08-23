@@ -1,6 +1,6 @@
 use bevy::{
     math::Vec2,
-    prelude::{Children, Commands, DespawnRecursiveExt, Entity, Query, Res},
+    prelude::{Children, Commands, Entity, Query, Res},
 };
 use bevy_granite_core::{RequestLoadEvent, RequestReloadEvent, RequestSaveEvent, UserInput};
 use bevy_granite_gizmos::{RequestDeselectAllEntitiesEvent, Selected};
@@ -45,7 +45,7 @@ fn handle_shortcuts(
             LogCategory::Input,
             "(shortcut) Toggling editor"
         );
-        events.toggle_editor.send(RequestEditorToggle);
+        events.toggle_editor.write(RequestEditorToggle);
     }
 
     if !editor_state.active {
@@ -61,7 +61,7 @@ fn handle_shortcuts(
             LogCategory::Input,
             "(shortcut) Toggling camera sync"
         );
-        events.toggle_cam_sync.send(RequestToggleCameraSync);
+        events.toggle_cam_sync.write(RequestToggleCameraSync);
     }
 
     // Delete Key
@@ -76,10 +76,10 @@ fn handle_shortcuts(
         for (entity, _, children) in query.iter() {
             if let Some(children) = children {
                 for &child in children.iter() {
-                    commands.entity(child).despawn_recursive();
+                    commands.entity(child).despawn();
                 }
             }
-            commands.entity(entity).despawn_recursive();
+            commands.entity(entity).despawn();
         }
     }
 
@@ -92,7 +92,7 @@ fn handle_shortcuts(
             LogCategory::Input,
             "(shortcut) Framing selected entity"
         );
-        events.frame.send(RequestCameraEntityFrame);
+        events.frame.write(RequestCameraEntityFrame);
     }
 
     // U key
@@ -104,7 +104,7 @@ fn handle_shortcuts(
             LogCategory::Input,
             "(shortcut) Deselecting all entities"
         );
-        events.deselect.send(RequestDeselectAllEntitiesEvent);
+        events.deselect.write(RequestDeselectAllEntitiesEvent);
     }
 
     // Shft-A
@@ -120,7 +120,7 @@ fn handle_shortcuts(
             LogCategory::Input,
             "(shortcut) Opening Add Entity popup"
         );
-        events.popup.send(PopupMenuRequestedEvent {
+        events.popup.write(PopupMenuRequestedEvent {
             popup: PopupType::AddEntity,
             mouse_pos: input.mouse_pos,
         });
@@ -135,7 +135,7 @@ fn handle_shortcuts(
             LogCategory::Input,
             "(shortcut) Opening help popup"
         );
-        events.popup.send(PopupMenuRequestedEvent {
+        events.popup.write(PopupMenuRequestedEvent {
             popup: PopupType::Help,
             mouse_pos: Vec2::NAN,
         });
@@ -157,7 +157,7 @@ fn handle_shortcuts(
         {
             events
                 .load
-                .send(RequestLoadEvent(path.display().to_string()));
+                .write(RequestLoadEvent(path.display().to_string()));
         };
     }
 
@@ -186,7 +186,7 @@ fn handle_shortcuts(
                     index + 1,
                     source
                 );
-                events.save.send(RequestSaveEvent(source.to_string()));
+                events.save.write(RequestSaveEvent(source.to_string()));
             }
         } else {
             log!(
@@ -214,7 +214,7 @@ fn handle_shortcuts(
             );
             events
                 .reload
-                .send(RequestReloadEvent(current_file.to_string()));
+                .write(RequestReloadEvent(current_file.to_string()));
         } else {
             log!(
                 LogType::Editor,
@@ -238,7 +238,7 @@ fn handle_shortcuts(
             LogCategory::Input,
             "(shortcut) Opening Add Relationship popup"
         );
-        events.popup.send(PopupMenuRequestedEvent {
+        events.popup.write(PopupMenuRequestedEvent {
             popup: PopupType::AddRelationship,
             mouse_pos: input.mouse_pos,
         });

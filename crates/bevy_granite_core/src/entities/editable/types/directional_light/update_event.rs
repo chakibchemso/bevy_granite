@@ -29,8 +29,8 @@ impl DirLight {
 
         request_update
             .directional_light
-            .send(UserUpdatedDirectionalLightEvent {
-                entity: entity,
+            .write(UserUpdatedDirectionalLightEvent {
+                entity,
                 data: self.clone(),
             });
     }

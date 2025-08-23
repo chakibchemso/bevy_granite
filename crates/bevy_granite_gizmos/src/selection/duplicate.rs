@@ -7,14 +7,10 @@ use bevy::{
         query::With,
         system::{Commands, Query},
     },
-    hierarchy::BuildWorldChildren,
-    prelude::{AppTypeRegistry, Children, EventReader, Parent, ReflectComponent, Res, World},
-    render::mesh::Mesh,
+    prelude::{AppTypeRegistry, ChildOf, Children, EventReader, ReflectComponent, Res, World},
+    render::mesh::{Mesh, Mesh3d},
 };
-use bevy_granite_core::{
-    entities::{GraniteType},
-    HasRuntimeData, IconProxy, IdentityData,
-};
+use bevy_granite_core::{entities::GraniteType, HasRuntimeData, IconProxy, IdentityData};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
@@ -36,11 +32,12 @@ pub fn duplicate_entity_system(
         let to_duplicate = event.entity;
         let registry = type_registry.clone();
 
-        commands.add(move |world: &mut World| {
+        commands.queue(move |world: &mut World| {
             let original_parent = world
                 .get_entity(to_duplicate)
-                .and_then(|entity_ref| entity_ref.get::<Parent>())
-                .map(|parent| parent.get());
+                .ok()
+                .and_then(|entity_ref| entity_ref.get::<ChildOf>())
+                .map(|parent| parent.parent());
 
             duplicate_entity_recursive(world, to_duplicate, original_parent, &registry);
         });
@@ -62,12 +59,13 @@ pub fn duplicate_all_selection_system(
         );
         let registry = type_registry.clone();
         let entities_to_duplicate: Vec<Entity> = selected.iter().collect();
-        commands.add(move |world: &mut World| {
+        commands.queue(move |world: &mut World| {
             for entity in entities_to_duplicate {
                 let original_parent = world
                     .get_entity(entity)
-                    .and_then(|entity_ref| entity_ref.get::<Parent>())
-                    .map(|parent| parent.get());
+                    .ok()
+                    .and_then(|entity_ref| entity_ref.get::<ChildOf>())
+                    .map(|parent| parent.parent());
 
                 duplicate_entity_recursive(world, entity, original_parent, &registry);
             }
@@ -92,15 +90,15 @@ fn duplicate_entity_recursive(
 
     if needs_unique {
         // Handle mesh cloning - for entities that need unique handles
-        if let Some(mesh_handle) = world.get::<Handle<Mesh>>(entity_to_duplicate).cloned() {
+        if let Some(mesh_handle) = world.get::<Mesh3d>(entity_to_duplicate).cloned() {
             if let Some(mut mesh_assets) = world.get_resource_mut::<Assets<Mesh>>() {
                 if let Some(original_mesh) = mesh_assets.get(&mesh_handle) {
                     let cloned_mesh = original_mesh.clone();
                     let new_handle = mesh_assets.add(cloned_mesh);
 
                     // Add the new handle to the new entity
-                    if let Some(mut entity_mut) = world.get_entity_mut(new_entity) {
-                        entity_mut.insert(new_handle);
+                    if let Ok(mut entity_mut) = world.get_entity_mut(new_entity) {
+                        entity_mut.insert(Mesh3d(new_handle));
                     }
                 }
             }
@@ -144,7 +142,7 @@ struct EntityInfo {
 }
 
 fn collect_entity_info(world: &World, entity: Entity) -> Option<EntityInfo> {
-    let entity_ref = world.get_entity(entity)?;
+    let entity_ref = world.get_entity(entity).ok()?;
 
     log!(
         LogType::Editor,
@@ -237,7 +235,7 @@ fn copy_components_safe(
         .unwrap_or(false);
 
     let mut skip_components = vec![
-        std::any::TypeId::of::<Parent>(),
+        std::any::TypeId::of::<ChildOf>(),
         std::any::TypeId::of::<Children>(),
     ];
 
@@ -245,7 +243,6 @@ fn copy_components_safe(
     if needs_unique {
         skip_components.push(std::any::TypeId::of::<Handle<Mesh>>());
     }
-
 
     for &type_id in component_type_ids {
         if skip_components.contains(&type_id) {
@@ -281,8 +278,8 @@ fn copy_components_safe(
         };
 
         let source_ref = match world.get_entity(source_entity) {
-            Some(er) => er,
-            None => {
+            Ok(er) => er,
+            Err(e) => {
                 log!(
                     LogType::Editor,
                     LogLevel::Warning,
@@ -317,14 +314,14 @@ fn copy_components_safe(
             if let Some(source_identity) = world.get::<IdentityData>(source_entity) {
                 let mut new_identity = source_identity.clone();
                 new_identity.uuid = Uuid::new_v4(); // Generate new UUID for the duplicate
-                
+
                 // Now insert the new identity data
-                if let Some(mut target_ref) = world.get_entity_mut(target_entity) {
+                if let Ok(mut target_ref) = world.get_entity_mut(target_entity) {
                     target_ref.insert(new_identity);
                 }
             }
         } else {
-            if let Some(mut target_ref) = world.get_entity_mut(target_entity) {
+            if let Ok(mut target_ref) = world.get_entity_mut(target_entity) {
                 reflect_component.insert(&mut target_ref, &*cloned_component, &registry_guard);
             }
         }
@@ -333,7 +330,7 @@ fn copy_components_safe(
 
 fn log_copied_components(world: &World, entity: Entity) {
     let mut component_names = Vec::new();
-    if let Some(entity_ref) = world.get_entity(entity) {
+    if let Ok(entity_ref) = world.get_entity(entity) {
         for archetype_component_id in entity_ref.archetype().components() {
             if let Some(component_info) = world.components().get_info(archetype_component_id) {
                 component_names.push(component_info.name());

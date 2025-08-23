@@ -1,12 +1,12 @@
 use bevy::prelude::{Assets, Entity, Handle, Mesh, Query, Vec3};
-use bevy::render::mesh::VertexAttributeValues;
+use bevy::render::mesh::{Mesh3d, VertexAttributeValues};
 use bevy::transform::components::GlobalTransform;
-use bevy_granite_core::{GraniteType, IdentityData, ClassCategory};
+use bevy_granite_core::{ClassCategory, GraniteType, IdentityData};
 
 pub fn get_entity_bounds(
     entity: Entity,
     meshes: &Assets<Mesh>,
-    mesh_query: &Query<&Handle<Mesh>>,
+    mesh_query: &Query<&Mesh3d>,
 ) -> Option<(Vec3, Vec3)> {
     let mesh_handle = mesh_query.get(entity).ok()?;
     let mesh = meshes.get(mesh_handle)?;
@@ -32,7 +32,7 @@ pub fn get_entity_bounds(
 pub fn get_entity_bounds_world(
     entity: Entity,
     meshes: &Assets<Mesh>,
-    mesh_query: &Query<&Handle<Mesh>>,
+    mesh_query: &Query<&Mesh3d>,
     transform: &GlobalTransform,
 ) -> Option<(Vec3, Vec3)> {
     let mesh_handle = mesh_query.get(entity).ok()?;
@@ -61,7 +61,7 @@ pub fn get_entity_bounds_or_fallback(
     entity: Entity,
     identity_data: &IdentityData,
     meshes: &Assets<Mesh>,
-    mesh_query: &Query<&Handle<Mesh>>,
+    mesh_query: &Query<&Mesh3d>,
 ) -> Option<(Vec3, Vec3)> {
     match identity_data.class.category() {
         ClassCategory::Mesh => get_entity_bounds(entity, meshes, mesh_query),

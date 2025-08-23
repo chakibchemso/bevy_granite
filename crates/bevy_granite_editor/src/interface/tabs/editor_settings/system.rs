@@ -24,7 +24,7 @@ pub enum SettingsTab {
     #[default]
     Viewport,
     Interface,
-    Import
+    Import,
 }
 
 #[derive(PartialEq, Clone, Serialize, Deserialize, Debug)]
@@ -84,7 +84,7 @@ pub fn update_editor_settings_tab_system(
     mut prompt_import_settings: ResMut<PromptImportSettings>,
     mut events: EditorEvents,
 ) {
-    let ctx = contexts.ctx_mut();
+    let ctx = contexts.ctx_mut().expect("Egui context to exist");
 
     let side_dock_clone = side_dock.clone();
     if editor_state.config_loaded && !editor_state.layout_loaded {
@@ -95,7 +95,7 @@ pub fn update_editor_settings_tab_system(
         // Show help popup on start
         editor_state.layout_loaded = true;
         if editor_state.config.show_help_on_start {
-            events.popup.send(PopupMenuRequestedEvent {
+            events.popup.write(PopupMenuRequestedEvent {
                 popup: PopupType::Help,
                 mouse_pos: Vec2::NAN,
             });
@@ -151,9 +151,9 @@ pub fn update_editor_settings_tab_system(
                 viewport_state.changed = false;
                 editor_state.config.viewport = viewport_state.clone();
                 let (sel_config, _) = gizmo_config_store.config_mut::<SelectionRenderer>();
-                sel_config.line_width = data.viewport.visualizers.selection_line_thickness;
+                sel_config.line.width = data.viewport.visualizers.selection_line_thickness;
                 let (debug_config, _) = gizmo_config_store.config_mut::<DebugRenderer>();
-                debug_config.line_width = data.viewport.visualizers.debug_line_thickness;
+                debug_config.line.width = data.viewport.visualizers.debug_line_thickness;
             }
 
             if data.save_requested {

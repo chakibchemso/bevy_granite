@@ -5,17 +5,22 @@ use crate::{
 use bevy::{
     ecs::{
         entity::Entity,
-        event::{EventReader},
+        event::EventReader,
         system::{Commands, Query},
     },
-    pbr::VolumetricFogSettings,
+    pbr::{FogVolume, VolumetricFog as VolumetricFogSettings},
     render::camera::Camera,
 };
+
 use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
 
 impl Camera3D {
     /// Request an entity update with this data
-    pub fn push_to_entity(&self, entity: Entity, request_update: &mut RequestEntityUpdateFromClass) {
+    pub fn push_to_entity(
+        &self,
+        entity: Entity,
+        request_update: &mut RequestEntityUpdateFromClass,
+    ) {
         log!(
             LogType::Editor,
             LogLevel::Info,
@@ -23,13 +28,12 @@ impl Camera3D {
             "Requesting camera entity update"
         );
 
-        request_update.camera_3d.send(UserUpdatedCamera3DEvent {
-            entity: entity,
+        request_update.camera_3d.write(UserUpdatedCamera3DEvent {
+            entity,
             data: self.clone(),
         });
     }
 }
-
 
 /// Actually update the specific entity with the class data
 /// In the future im sure we will have FOV and what not
@@ -58,40 +62,29 @@ pub fn update_camera_3d_system(
             }
 
             if new.has_volumetric_fog {
-                let found_fog = new.volumetric_fog_settings.clone();
-                if let Some(new_fog) = found_fog {
-                    commands.entity(entity).remove::<VolumetricFogSettings>();
-                    commands.entity(entity).insert(VolumetricFogSettings {
-                        fog_color: new_fog.fog_color,
-                        absorption: new_fog.absorption,
-                        ambient_color: new_fog.ambient_color,
-                        ambient_intensity: new_fog.ambient_intensity,
-                        step_count: new_fog.step_count,
-                        light_intensity: new_fog.light_intensity,
-                        light_tint: new_fog.light_tint,
-                        density: new_fog.density,
-                        max_depth: new_fog.max_depth,
-                        scattering: new_fog.scattering,
-                        scattering_asymmetry: new_fog.scattering_asymmetry,
-                    });
-                } else {
-                    let default_fog = VolumetricFog::default();
-                    commands.entity(entity).insert(VolumetricFogSettings {
-                        fog_color: default_fog.fog_color,
-                        absorption: default_fog.absorption,
-                        ambient_color: default_fog.ambient_color,
-                        ambient_intensity: default_fog.ambient_intensity,
-                        step_count: default_fog.step_count,
-                        light_intensity: default_fog.light_intensity,
-                        light_tint: default_fog.light_tint,
-                        density: default_fog.density,
-                        max_depth: default_fog.max_depth,
-                        scattering: default_fog.scattering,
-                        scattering_asymmetry: default_fog.scattering_asymmetry,
-                    });
-                }
+                let fog_config = new.volumetric_fog_settings.clone().unwrap_or_default();
+                let mut fog = VolumetricFogSettings::default();
+                let mut fog_volume = FogVolume::default();
+                fog.ambient_color = fog_config.ambient_color;
+                fog.ambient_intensity = fog_config.ambient_intensity;
+                fog_volume.fog_color = fog_config.fog_color;
+                fog_volume.absorption = fog_config.absorption;
+                fog.step_count = fog_config.step_count;
+                fog_volume.light_intensity = fog_config.light_intensity;
+                fog_volume.light_tint = fog_config.light_tint;
+                fog_volume.density_factor = fog_config.density;
+                fog_volume.scattering = fog_config.scattering;
+                fog_volume.scattering_asymmetry = fog_config.scattering_asymmetry;
+
+                //TODO: work out the bevy 0.16 equivalent for max_depth
+                // commands.entity(entity).insert(VolumetricFogSettings {
+                //     max_depth: new_fog.max_depth,
+                // });
+                commands.entity(entity).insert((fog, fog_volume));
             } else {
-                commands.entity(entity).remove::<VolumetricFogSettings>();
+                commands
+                    .entity(entity)
+                    .remove::<(VolumetricFogSettings, FogVolume)>();
             }
 
             // Update the IdentityData to match new changes

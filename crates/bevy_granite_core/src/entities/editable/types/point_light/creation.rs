@@ -5,9 +5,9 @@ use crate::{
 };
 use bevy::{
     color::Color,
-    core::Name,
     ecs::{bundle::Bundle, entity::Entity, system::Commands},
-    pbr::{PointLight, PointLightBundle},
+    pbr::PointLight,
+    prelude::Name,
     transform::components::Transform,
 };
 use uuid::Uuid;
@@ -64,19 +64,16 @@ impl PointLightData {
         transform: Transform,
     ) -> impl Bundle {
         (
-            PointLightBundle {
-                transform,
-                point_light: PointLight {
-                    intensity: point_light.intensity,
-                    color: Color::linear_rgb(
-                        point_light.color.0,
-                        point_light.color.1,
-                        point_light.color.2,
-                    ),
-                    range: point_light.range,
-                    shadows_enabled: point_light.shadows_enabled,
-                    ..Default::default()
-                },
+            transform,
+            PointLight {
+                intensity: point_light.intensity,
+                color: Color::linear_rgb(
+                    point_light.color.0,
+                    point_light.color.1,
+                    point_light.color.2,
+                ),
+                range: point_light.range,
+                shadows_enabled: point_light.shadows_enabled,
                 ..Default::default()
             },
             Name::new(identity.name.clone()),

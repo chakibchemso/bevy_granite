@@ -9,7 +9,7 @@ use bevy_egui::{
     egui::{self, Window},
     EguiContexts,
 };
-use bevy_granite_core::{GraniteTypes, GraniteType, ClassCategory};
+use bevy_granite_core::{ClassCategory, GraniteType, GraniteTypes};
 
 // We dont need EntityClassType. Its the same list as the data sister struct. just keep one struct - the data one
 
@@ -28,10 +28,10 @@ pub fn add_entity_ui(
         .fixed_pos([position.x, position.y])
         // call this to ensure the window is not transparent when theme transparency is selected
         .frame(make_frame_solid_via_context(
-            egui::Frame::window(&contexts.ctx_mut().style()),
-            &contexts.ctx_mut(),
+            egui::Frame::window(&contexts.ctx_mut().expect("Egui context to exist").style()),
+            &contexts.ctx_mut().expect("Egui context to exist"),
         ))
-        .show(contexts.ctx_mut(), |ui| {
+        .show(contexts.ctx_mut().expect("Egui context to exist"), |ui| {
             ui.horizontal(|ui| {
                 let categories = get_all_categories();
 
@@ -105,7 +105,7 @@ pub fn add_entity_ui(
             });
         });
 
-    let ctx = contexts.ctx_mut();
+    let ctx = contexts.ctx_mut().expect("Egui context to exist");
     if ctx.input(|i| i.pointer.any_click()) && !ctx.is_pointer_over_area() {
         should_close = true;
     }

@@ -29,10 +29,10 @@ pub fn help_ui(
         .min_size(min_size)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
         .frame(make_frame_solid_via_context(
-            egui::Frame::window(&contexts.ctx_mut().style()),
-            &contexts.ctx_mut(),
+            egui::Frame::window(&contexts.ctx_mut().expect("Egui context to exist").style()),
+            &contexts.ctx_mut().expect("Egui context to exist"),
         ))
-        .show(contexts.ctx_mut(), |ui| {
+        .show(contexts.ctx_mut().expect("Egui context to exist"), |ui| {
             ui.vertical(|ui| {
                 // Content area with horizontal padding
                 ui.horizontal(|ui| {

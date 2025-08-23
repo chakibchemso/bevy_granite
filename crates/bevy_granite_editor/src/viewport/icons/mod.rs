@@ -5,9 +5,10 @@ pub mod updating;
 use bevy::{
     asset::Assets,
     ecs::system::ResMut,
-    pbr::PbrBundle,
+    image::Image,
+    pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{Bundle, Name},
-    render::texture::Image,
+    render::mesh::Mesh3d,
 };
 use bevy_granite_core::{GraniteType, GraniteTypes, IconEntity};
 use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
@@ -15,7 +16,8 @@ use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
 #[derive(Bundle)]
 pub struct IconBundle {
     pub icon_entity: IconEntity,
-    pub pbr_bundle: PbrBundle,
+    pub mesh: Mesh3d,
+    pub material: MeshMaterial3d<StandardMaterial>,
     pub name: Name,
 }
 

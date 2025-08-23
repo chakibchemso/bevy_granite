@@ -11,16 +11,19 @@ use crate::{
     },
     GizmoCamera,
 };
-use bevy::prelude::{
-    Children, Entity, EventReader, EventWriter, Gizmos, GlobalTransform, Name, ParamSet, Parent,
-    Query, Res, ResMut, Transform, Vec3, With, Without,
+use bevy::{
+    ecs::query::Changed,
+    picking::hover::PickingInteraction,
+    prelude::{
+        ChildOf, Children, Entity, EventReader, EventWriter, Gizmos, GlobalTransform, Name,
+        ParamSet, Query, Res, ResMut, Transform, Vec3, With, Without,
+    },
 };
-use bevy_granite_core::{mouse_to_world_delta, CursorWindowPos, UserInput, IconProxy};
+use bevy_granite_core::{mouse_to_world_delta, CursorWindowPos, IconProxy, UserInput};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
-use bevy_mod_raycast::prelude::{CursorRay, Raycast};
 
 // TODO:
 // Watch for left CTRL just pressed, if so, move camera with transform
@@ -32,14 +35,23 @@ use bevy_mod_raycast::prelude::{CursorRay, Raycast};
 type CameraQuery<'w, 's> = Query<'w, 's, &'w Transform, With<GizmoCamera>>;
 type ActiveSelectionQuery<'w, 's> = Query<'w, 's, Entity, With<ActiveSelection>>;
 type TransformGizmoQuery<'w, 's> =
-    Query<'w, 's, (Entity, &'w GizmoAxis, &'w Parent), With<TransformGizmo>>;
+    Query<'w, 's, (Entity, &'w GizmoAxis, &'w ChildOf), With<TransformGizmo>>;
 
 type NonActiveSelectionQuery<'w, 's> =
     Query<'w, 's, Entity, (With<Selected>, Without<ActiveSelection>)>;
 type TransformQuery<'w, 's> =
     Query<'w, 's, (&'w mut Transform, &'w GlobalTransform, Entity), Without<GizmoCamera>>;
-type GizmoMeshNameQuery<'w, 's> = Query<'w, 's, (Entity, Option<&'w GizmoMesh>, Option<&'w IconProxy>, &'w Name)>;
-type ParentQuery<'w, 's> = Query<'w, 's, &'w Parent>;
+type GizmoMeshNameQuery<'w, 's> = Query<
+    'w,
+    's,
+    (
+        Entity,
+        Option<&'w GizmoMesh>,
+        Option<&'w IconProxy>,
+        &'w Name,
+    ),
+>;
+type ParentQuery<'w, 's> = Query<'w, 's, &'w ChildOf>;
 type ChildrenQuery<'w, 's> = Query<'w, 's, &'w Children>;
 // ------------------------------------------------------------------------
 
@@ -121,13 +133,21 @@ pub fn handle_init_transform_drag(
     mut drag_state: ResMut<DragState>,
     resources: (
         Res<CursorWindowPos>,
-        Res<CursorRay>,
         ResMut<RaycastCursorLast>,
         ResMut<RaycastCursorPos>,
     ),
     mut duplicate_event_writer: EventWriter<RequestDuplicateAllSelectionEvent>,
-    mut raycast: Raycast,
     user_input: Res<UserInput>,
+    interactions: Query<
+        (
+            Entity,
+            Option<&GizmoMesh>,
+            Option<&IconProxy>,
+            &Name,
+            &PickingInteraction,
+        ),
+        Changed<PickingInteraction>,
+    >,
     mut queries: ParamSet<(
         ActiveSelectionQuery,
         TransformGizmoQuery,
@@ -136,17 +156,15 @@ pub fn handle_init_transform_drag(
         GizmoMeshNameQuery,
     )>,
 ) {
-    let (cursor_2d, cursor_ray, mut raycast_cursor_last_pos, mut raycast_cursor_pos) = resources;
+    let (cursor_2d, mut raycast_cursor_last_pos, mut raycast_cursor_pos) = resources;
     for TransformInitDragEvent in events.read() {
-        let (entity, hit_type) = raycast_at_cursor(
-            &cursor_ray,
-            &mut raycast,
-            queries.p4(),
-            &mut raycast_cursor_last_pos,
-            &mut raycast_cursor_pos,
-        );
+        let (entity, hit_type) = raycast_at_cursor(interactions);
 
-        if hit_type == HitType::None || hit_type == HitType::Icon || hit_type == HitType::Mesh || entity.is_none() {
+        if hit_type == HitType::None
+            || hit_type == HitType::Icon
+            || hit_type == HitType::Mesh
+            || entity.is_none()
+        {
             return;
         }
 
