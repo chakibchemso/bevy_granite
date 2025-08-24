@@ -68,7 +68,7 @@ pub fn dock_ui_system(
     egui::TopBottomPanel::top("tool_panel")
         .resizable(false)
         .show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 top_bar_ui(
                     &mut side_dock,
                     &mut bottom_dock,

@@ -27,7 +27,7 @@ pub fn display_add_material_field_dropdown(
 
     if !available_fields.is_empty() {
         let width = ui.available_width();
-        egui::ComboBox::from_id_source("add_material_field_dropdown")
+        egui::ComboBox::from_id_salt("add_material_field_dropdown")
             .selected_text("Add field...")
             .width(width)
             .show_ui(ui, |ui| {
@@ -654,7 +654,7 @@ fn display_text_field(
 
                         changed = true;
                     }
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 ui.add_space(small_spacing);

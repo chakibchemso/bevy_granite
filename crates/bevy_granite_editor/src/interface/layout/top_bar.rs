@@ -53,7 +53,7 @@ pub fn top_bar_ui(
                             .save
                             .send(RequestSaveEvent(path.display().to_string()));
                     }
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if ui.button("Save (Ctrl + S)").clicked() {
@@ -63,7 +63,7 @@ pub fn top_bar_ui(
                             events.save.send(RequestSaveEvent(source.to_string()));
                         }
                     }
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if ui.button("Open (Ctrl + O)").clicked() {
@@ -76,7 +76,7 @@ pub fn top_bar_ui(
                             .load
                             .send(RequestLoadEvent(path.display().to_string()));
                     }
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 ui.separator();
@@ -84,7 +84,7 @@ pub fn top_bar_ui(
                 ui.menu_button("Despawn", |ui| {
                     if ui.button("Despawn All Entities").clicked() {
                         events.despawn_all.send(RequestDespawnSerializableEntities);
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     ui.separator();
@@ -104,7 +104,7 @@ pub fn top_bar_ui(
                                 events
                                     .despawn_by_source
                                     .send(RequestDespawnBySource(source));
-                                ui.close_menu();
+                                ui.close();
                             }
                         }
                     }
@@ -116,7 +116,7 @@ pub fn top_bar_ui(
                     events
                         .load
                         .send(RequestLoadEvent(editor_state.default_world.clone()));
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if ui.button("Save Default World").clicked() {
@@ -124,7 +124,7 @@ pub fn top_bar_ui(
                         .save
                         .send(RequestSaveEvent(editor_state.default_world.clone()));
 
-                    ui.close_menu();
+                    ui.close();
                 }
             });
             ui.menu_button("Panels", |ui| {
@@ -138,7 +138,7 @@ pub fn top_bar_ui(
                         data: Box::new(EntityEditorTabData::default()),
                     };
                     side_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if !side_dock
@@ -151,7 +151,7 @@ pub fn top_bar_ui(
                         data: Box::new(NodeTreeTabData::default()),
                     };
                     side_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if !side_dock
@@ -164,7 +164,7 @@ pub fn top_bar_ui(
                         data: Box::new(EditorSettingsTabData::default()),
                     };
                     side_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if !bottom_dock
@@ -177,7 +177,7 @@ pub fn top_bar_ui(
                         data: LogTabData::default(),
                     };
                     bottom_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if !bottom_dock
@@ -190,7 +190,7 @@ pub fn top_bar_ui(
                         data: DebugTabData::default(),
                     };
                     bottom_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
             });
         });
