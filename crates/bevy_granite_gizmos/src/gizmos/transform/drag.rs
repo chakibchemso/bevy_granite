@@ -33,6 +33,7 @@ use bevy::{
         ChildOf, Children, Entity, EventReader, EventWriter, Gizmos, GlobalTransform, Name,
         ParamSet, Query, Res, ResMut, Transform, Vec3, With, Without,
     },
+    render::camera,
     window::Window,
     winit::cursor,
 };
@@ -76,8 +77,11 @@ type ChildrenQuery<'w, 's> = Query<'w, 's, &'w Children>;
 pub fn drag_transform_gizmo(
     event: Trigger<Pointer<Drag>>,
     targets: Query<&GizmoOf>,
-    camera_query: Query<(&GlobalTransform, &bevy::render::camera::Camera), With<GizmoCamera>>,
-    mut objects: Query<&mut Transform, Without<GizmoCamera>>,
+    camera_query: Query<
+        (Entity, &GlobalTransform, &bevy::render::camera::Camera),
+        With<GizmoCamera>,
+    >,
+    mut objects: Query<&mut Transform>,
     gizmo_snap: Res<GizmoSnap>,
     gizmo_data: Query<&GizmoAxis>,
     input: Res<ButtonInput<KeyCode>>,
@@ -93,7 +97,7 @@ pub fn drag_transform_gizmo(
         return;
     };
 
-    let Ok((camera_transform, camera)) = camera_query.single() else {
+    let Ok((c_entity, camera_transform, camera)) = camera_query.single() else {
         log! {
             LogType::Editor,
             LogLevel::Error,
@@ -136,6 +140,7 @@ pub fn drag_transform_gizmo(
         return;
     };
 
+    let start = target_transform.translation;
     match axis {
         GizmoAxis::None => {}
         GizmoAxis::X => {
@@ -185,6 +190,12 @@ pub fn drag_transform_gizmo(
 
             // let hit = camera_transform.translation() + (click_ray.direction * click_distance);
             // target_transform.translation = hit;
+        }
+    }
+    if input.pressed(KeyCode::ControlLeft) || input.pressed(KeyCode::ControlRight) {
+        let delta = target_transform.translation - start;
+        if let Ok(mut camera_transform) = objects.get_mut(c_entity) {
+            camera_transform.translation += delta;
         }
     }
 }
