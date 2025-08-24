@@ -1,5 +1,5 @@
 use super::{RequestDuplicateAllSelectionEvent, RequestDuplicateEntityEvent};
-use crate::{gizmos::GizmoParent, selection::Selected};
+use crate::{gizmos::GizmoChildren, selection::Selected};
 use bevy::{
     asset::{Assets, Handle},
     ecs::{
@@ -194,7 +194,7 @@ fn collect_entity_info(world: &World, entity: Entity) -> Option<EntityInfo> {
                         .get_entity(child)
                         // Do NOT include GizmoParent or IconProxy in duplication
                         .map(|entity_ref| {
-                            !entity_ref.contains::<GizmoParent>()
+                            !entity_ref.contains::<GizmoChildren>()
                                 && !entity_ref.contains::<IconProxy>()
                         })
                         .unwrap_or(false)

@@ -14,7 +14,7 @@ use bevy_granite_logging::{
 };
 
 use crate::{
-    gizmos::{GizmoMesh, GizmoOf, GizmoParent},
+    gizmos::{GizmoChildren, GizmoMesh, GizmoOf, GizmoRoot},
     input::GizmoAxis,
 };
 
@@ -66,7 +66,6 @@ pub fn spawn_transform_gizmo(
             .insert(Name::new("TransformGizmo"))
             .insert(TransformGizmo)
             .insert(TransformGizmoParent)
-            .insert(GizmoParent)
             .id();
 
         build_gizmo_sphere(
@@ -196,6 +195,7 @@ fn build_axis_cylinder(
             NotShadowCaster,
             NotShadowReceiver,
             Name::new("Gizmo Transform Cone"),
+            GizmoRoot(parent),
         ))
         .insert(GizmoOf(root))
         .insert(axis)
@@ -214,6 +214,7 @@ fn build_axis_cylinder(
             NotShadowReceiver,
             Name::new("Gizmo Transform Arrow"),
             GizmoOf(root),
+            GizmoRoot(parent),
             axis,
             TransformGizmo,
             GizmoMesh,

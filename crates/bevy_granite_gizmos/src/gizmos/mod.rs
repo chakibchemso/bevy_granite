@@ -1,5 +1,5 @@
 use bevy::{
-    ecs::{component::Component, resource::Resource},
+    ecs::{component::Component, entity::Entity, resource::Resource},
     prelude::{Deref, DerefMut},
     render::view::RenderLayers,
 };
@@ -39,7 +39,8 @@ pub struct LastSelectedGizmo {
 pub struct GizmoMesh;
 
 #[derive(Component)]
-pub struct GizmoParent;
+#[relationship_target(relationship = GizmoRoot)]
+pub struct GizmoChildren(Vec<Entity>);
 
 #[derive(Resource)]
 pub struct GizmoSnap {
@@ -47,11 +48,15 @@ pub struct GizmoSnap {
     pub transform_value: f32,
 }
 
-#[derive(Component, Deref)]
+#[derive(Component, Deref, Clone, Copy)]
 #[relationship(relationship_target = Gizmos)]
 #[component(on_add = Self::on_add)]
 #[require(bevy_granite_core::EditorIgnore, RenderLayers = RenderLayers::layer(14))]
-pub struct GizmoOf(pub bevy::ecs::entity::Entity);
+pub struct GizmoOf(pub Entity);
+
+#[derive(Component)]
+#[relationship(relationship_target = GizmoChildren)]
+pub struct GizmoRoot(pub Entity);
 
 impl GizmoOf {
     fn on_add(mut world: bevy::ecs::world::DeferredWorld, ctx: bevy::ecs::component::HookContext) {
@@ -60,11 +65,15 @@ impl GizmoOf {
             .expect("EditorIgnore is required componet");
         ignore.insert(EditorIgnore::GIZMO | EditorIgnore::PICKING);
     }
+
+    pub fn get(&self) -> Entity {
+        self.0
+    }
 }
 
 #[derive(Component)]
 #[relationship_target(relationship = GizmoOf)]
-pub struct Gizmos(Vec<bevy::ecs::entity::Entity>);
+pub struct Gizmos(Vec<Entity>);
 
 use bevy_granite_core::EditorIgnore;
 pub use distance_scaling::scale_gizmo_by_camera_distance_system;
@@ -80,7 +89,6 @@ pub use rotate::{
     RotateGizmoParent,
 };
 pub use transform::{
-    draw_axis_line, handle_init_transform_drag, handle_transform_dragging, handle_transform_input,
-    handle_transform_reset, spawn_transform_gizmo, PreviousTransformGizmo, TransformGizmo,
+    draw_axis_line, spawn_transform_gizmo, PreviousTransformGizmo, TransformGizmo,
     TransformGizmoParent,
 };

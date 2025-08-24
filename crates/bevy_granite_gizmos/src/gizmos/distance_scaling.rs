@@ -8,13 +8,13 @@ use bevy::{
 };
 
 use crate::GizmoCamera;
-use super::{GizmoParent, GizmoType, SelectedGizmo};
+use super::{GizmoChildren, GizmoType, SelectedGizmo};
 
 const DISTANCE_SCALING_ENABLED: bool = true;
 
 pub fn scale_gizmo_by_camera_distance_system(
     camera_q: Query<&GlobalTransform, With<GizmoCamera>>,
-    mut gizmo_q: Query<(&GlobalTransform, &mut Transform), With<GizmoParent>>,
+    mut gizmo_q: Query<(&GlobalTransform, &mut Transform), With<GizmoChildren>>,
     mut selected_gizmo: ResMut<SelectedGizmo>,
 ) {
     if !DISTANCE_SCALING_ENABLED {

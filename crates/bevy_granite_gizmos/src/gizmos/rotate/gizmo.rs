@@ -20,7 +20,7 @@ use bevy_granite_logging::{
 use crate::gizmos::rotate::gizmo;
 use crate::gizmos::GizmoOf;
 use crate::{
-    gizmos::{GizmoMesh, GizmoParent},
+    gizmos::{GizmoChildren, GizmoMesh},
     input::GizmoAxis,
     selection::manager::ParentTo,
 };
@@ -96,11 +96,9 @@ pub fn spawn_rotate_gizmo(
                 GizmoOf(parent),
                 ChildOf(parent),
             ))
-            .insert(RenderLayers::layer(14)) // 14 is our UI/Gizmo layer.
             .insert(Name::new("RotateGizmo"))
             .insert(RotateGizmo)
             .insert(RotateGizmoParent)
-            .insert(GizmoParent)
             .id();
 
         // commands.entity(gizmo_entity).insert(ParentTo(parent));
@@ -200,7 +198,6 @@ fn build_free_sphere(
             NotShadowCaster,
             NotShadowReceiver,
             Name::new("Gizmo Rotate Sphere"),
-            RenderLayers::layer(14), // 14 is our UI/Gizmo layer.
             axis,
             RotateGizmo,
             GizmoMesh,
@@ -254,7 +251,6 @@ fn build_axis_ring<const C: char>(
             NotShadowCaster,
             NotShadowReceiver,
             Name::new("Gizmo Rotate Ring"),
-            RenderLayers::layer(14), // 14 is our UI/Gizmo layer.
             gizmo_axis,
             RotateGizmo,
             GizmoMesh,

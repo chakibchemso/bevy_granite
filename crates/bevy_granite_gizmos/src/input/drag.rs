@@ -1,4 +1,5 @@
 use bevy::{
+    color::Color,
     ecs::{component::Component, resource::Resource},
     math::{bool, Quat, Vec2, Vec3},
 };
@@ -63,6 +64,16 @@ impl GizmoAxis {
             GizmoAxis::Y => Quat::IDENTITY,
             GizmoAxis::Z => Quat::from_rotation_x((90f32).to_radians()),
             GizmoAxis::None | GizmoAxis::All => Quat::IDENTITY,
+        }
+    }
+
+    pub fn color(self) -> Color {
+        match self {
+            GizmoAxis::X => Color::linear_rgba(1., 0., 0., 1.),
+            GizmoAxis::Y => Color::linear_rgba(0., 1., 0., 1.),
+            GizmoAxis::Z => Color::linear_rgba(0., 0., 1., 1.),
+            GizmoAxis::All => Color::linear_rgba(1., 1., 1., 1.),
+            GizmoAxis::None => Color::linear_rgba(0., 0., 0., 1.),
         }
     }
 }

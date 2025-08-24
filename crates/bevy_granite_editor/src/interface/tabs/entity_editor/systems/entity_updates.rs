@@ -30,7 +30,7 @@ use bevy_granite_core::{
     AvailableEditableMaterials, ComponentEditor, EditableMaterial, EditableMaterialError,
     EditableMaterialField, IdentityData, StandardMaterialDef,
 };
-use bevy_granite_gizmos::GizmoParent;
+use bevy_granite_gizmos::GizmoChildren;
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
@@ -52,10 +52,10 @@ pub fn update_entity_with_new_transform_system(
     mut transform_updated_reader: EventReader<UserUpdatedTransformEvent>,
     mut e_query: Query<
         (Entity, &mut Transform, &GlobalTransform, Option<&ChildOf>),
-        (Without<GizmoParent>, With<IdentityData>),
+        (Without<GizmoChildren>, With<IdentityData>),
     >,
-    mut g_query: Query<(Entity, &mut Transform), (With<GizmoParent>, Without<IdentityData>)>,
-    parent_query: Query<&GlobalTransform, (With<IdentityData>, Without<GizmoParent>)>,
+    mut g_query: Query<(Entity, &mut Transform), (With<GizmoChildren>, Without<IdentityData>)>,
+    parent_query: Query<&GlobalTransform, (With<IdentityData>, Without<GizmoChildren>)>,
 ) {
     for UserUpdatedTransformEvent { entity, data } in transform_updated_reader.read() {
         if let Ok((_, mut transform, _current_global, parent)) = e_query.get_mut(*entity) {

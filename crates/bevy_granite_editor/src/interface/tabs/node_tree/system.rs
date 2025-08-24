@@ -8,7 +8,7 @@ use bevy::{
 };
 use bevy_granite_core::{GraniteType, IdentityData, TreeHiddenEntity};
 use bevy_granite_gizmos::{
-    ActiveSelection, GizmoMesh, GizmoParent, RequestDeselectEntityEvent, RequestSelectEntityEvent,
+    ActiveSelection, GizmoMesh, GizmoChildren, RequestDeselectEntityEvent, RequestSelectEntityEvent,
     RequestSelectEntityRangeEvent, Selected,
 };
 use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
@@ -75,12 +75,12 @@ pub fn update_node_tree_tabs_system(
         &Name,
         Option<&ChildOf>,
         Option<&IdentityData>,
-        (Has<GizmoParent>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
+        (Has<GizmoChildren>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
     )>,
 
     // detect changes (excluding Parent since we check that manually)
     mut changed_hierarchy: Query<
-        (Has<GizmoParent>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
+        (Has<GizmoChildren>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
         Or<(Changed<Name>, Changed<IdentityData>)>,
     >,
     mut select_event_writer: EventWriter<RequestSelectEntityEvent>,
