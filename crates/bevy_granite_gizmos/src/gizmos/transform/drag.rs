@@ -1,7 +1,7 @@
 use super::{draw_axis_line, TransformGizmo};
 use crate::{
     gizmos::{
-        GizmoMesh, GizmoSnap, GizmoType, SelectedGizmo, TransformDraggingEvent,
+        GizmoMesh, GizmoOf, GizmoSnap, GizmoType, SelectedGizmo, TransformDraggingEvent,
         TransformInitDragEvent, TransformResetDragEvent,
     },
     input::{DragState, GizmoAxis},
@@ -12,12 +12,22 @@ use crate::{
     GizmoCamera,
 };
 use bevy::{
-    ecs::query::Changed,
-    picking::hover::PickingInteraction,
+    ecs::{
+        observer::Trigger,
+        query::Changed,
+        system::{Local, Single},
+    },
+    math::Vec2,
+    picking::{
+        events::{Drag, DragEntry, Pointer},
+        hover::PickingInteraction,
+    },
     prelude::{
         ChildOf, Children, Entity, EventReader, EventWriter, Gizmos, GlobalTransform, Name,
         ParamSet, Query, Res, ResMut, Transform, Vec3, With, Without,
     },
+    window::Window,
+    winit::cursor,
 };
 use bevy_granite_core::{mouse_to_world_delta, CursorWindowPos, IconProxy, UserInput};
 use bevy_granite_logging::{
@@ -85,6 +95,7 @@ pub fn handle_transform_input(
     mut dragging_event: EventWriter<TransformDraggingEvent>,
     mut drag_ended_event: EventWriter<TransformResetDragEvent>,
 ) {
+    return;
     if !user_input.mouse_left.any {
         return;
     }
@@ -156,6 +167,7 @@ pub fn handle_init_transform_drag(
         GizmoMeshNameQuery,
     )>,
 ) {
+    return;
     let (cursor_2d, mut raycast_cursor_last_pos, mut raycast_cursor_pos) = resources;
     for TransformInitDragEvent in events.read() {
         let (entity, hit_type) = raycast_at_cursor(interactions);
@@ -268,6 +280,7 @@ pub fn handle_transform_dragging(
         ParentQuery,
     )>,
 ) {
+    return;
     let (cursor_2d, gizmo_snap, drag_state, selected_gizmo) = resources;
 
     for TransformDraggingEvent in events.read() {
@@ -446,5 +459,128 @@ pub fn handle_transform_reset(
             LogCategory::Input,
             "Finished dragging"
         );
+    }
+}
+
+pub fn drag_transform_gizmo(
+    event: Trigger<Pointer<Drag>>,
+    targets: Query<&GizmoOf>,
+    camera_query: Query<(&GlobalTransform, &bevy::render::camera::Camera), With<GizmoCamera>>,
+    mut objects: Query<&mut Transform, Without<GizmoCamera>>,
+    gizmo_snap: Res<GizmoSnap>,
+    gizmo_data: Query<&GizmoAxis>,
+) {
+    let Ok(axis) = gizmo_data.get(event.target) else {
+        log!(
+            LogType::Editor,
+            LogLevel::Warning,
+            LogCategory::Input,
+            "Gizmo Axis data not found for Gizmo entity {:?}",
+            event.target
+        );
+        return;
+    };
+
+    let Ok((camera_transform, camera)) = camera_query.single() else {
+        log! {
+            LogType::Editor,
+            LogLevel::Error,
+            LogCategory::Input,
+            "Gizmo camera not found",
+        };
+        return;
+    };
+
+    let Ok(GizmoOf(target)) = targets.get(event.target) else {
+        log! {
+            LogType::Editor,
+            LogLevel::Error,
+            LogCategory::Input,
+            "Gizmo target not found for entity {:?}",
+            event.target
+        };
+        return;
+    };
+    let Ok(click_ray) = camera.viewport_to_world(camera_transform, event.pointer_location.position)
+    else {
+        log! {
+            LogType::Editor,
+            LogLevel::Error,
+            LogCategory::Input,
+            "Failed to convert viewport to world coordinates for pointer location: {:?}",
+            event.pointer_location.position
+        };
+        return;
+    };
+
+    let Ok(mut target_transform) = objects.get_mut(*target) else {
+        log! {
+            LogType::Editor,
+            LogLevel::Error,
+            LogCategory::Input,
+            "Gizmo target transform not found for entity {:?}",
+            target
+        };
+        return;
+    };
+
+    match axis {
+        GizmoAxis::None => {}
+        GizmoAxis::X => {
+            let Some(click_distance) = click_ray.intersect_plane(
+                Vec3::new(0., target_transform.translation.y, 0.),
+                bevy::math::primitives::InfinitePlane3d::new(Vec3::Y),
+            ) else {
+                return;
+            };
+            let hit = camera_transform.translation() - (click_ray.direction * -click_distance);
+            target_transform.translation.x = snap_gizmo(hit.x, gizmo_snap.transform_value);
+        }
+        GizmoAxis::Y => {
+            let mut normal = camera_transform.forward().as_vec3();
+            normal.y = 0.0;
+            let Some(click_distance) = click_ray.intersect_plane(
+                Vec3::new(
+                    target_transform.translation.x,
+                    0.,
+                    target_transform.translation.z,
+                ),
+                bevy::math::primitives::InfinitePlane3d::new(normal.normalize()),
+            ) else {
+                return;
+            };
+            let hit = camera_transform.translation() - (click_ray.direction * -click_distance);
+            target_transform.translation.y = snap_gizmo(hit.y, gizmo_snap.transform_value);
+        }
+        GizmoAxis::Z => {
+            let Some(click_distance) = click_ray.intersect_plane(
+                Vec3::new(0., target_transform.translation.y, 0.),
+                bevy::math::primitives::InfinitePlane3d::new(Vec3::Y),
+            ) else {
+                return;
+            };
+            let hit = camera_transform.translation() - (click_ray.direction * -click_distance);
+            target_transform.translation.z = snap_gizmo(hit.z, gizmo_snap.transform_value);
+        }
+        GizmoAxis::All => {
+            let Some(click_distance) = click_ray.intersect_plane(
+                target_transform.translation,
+                bevy::math::primitives::InfinitePlane3d::new(camera_transform.forward()),
+            ) else {
+                return;
+            };
+            println!("click_distance: {}", click_ray.direction * click_distance);
+
+            // let hit = camera_transform.translation() + (click_ray.direction * click_distance);
+            // target_transform.translation = hit;
+        }
+    }
+}
+
+fn snap_gizmo(value: f32, inc: f32) -> f32 {
+    if inc == 0.0 {
+        value
+    } else {
+        (value / inc).round() * inc
     }
 }

@@ -22,7 +22,7 @@ use bevy::{
         hover::PickingInteraction,
     },
 };
-use bevy_granite_core::{IconProxy, UserInput};
+use bevy_granite_core::{EditorIgnore, IconProxy, UserInput};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
@@ -306,18 +306,16 @@ pub fn handle_entity_selection(
     mut commands: Commands,
     selected: Query<Entity, With<Selected>>,
     active_selection: Query<Entity, With<ActiveSelection>>,
-    ignored: Query<(), With<crate::utils::EditorIgnore>>,
+    ignored: Query<&EditorIgnore>,
 ) {
     if on_click.button != bevy::picking::pointer::PointerButton::Primary {
         return;
     }
     match ignored.get(on_click.target()) {
-        Ok(_) => {
-            log!(
-                "ignoring EditorIgnore entity: {}",
-                on_click.target().index()
-            );
-            return;
+        Ok(to_ignore) => {
+            if to_ignore.contains(EditorIgnore::PICKING) {
+                return;
+            }
         }
         Err(QueryEntityError::EntityDoesNotExist(_)) => {
             log!("Entity does not exist: {}", on_click.target().index());

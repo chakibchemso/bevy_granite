@@ -8,6 +8,7 @@ pub struct InputConfig {
     pub pan_camera_sensitivity: f32,
     pub obit_camera_sensitivity: f32,
     pub zoom_camera_sensitivity: f32,
+    pub zoom_clip_distance: f32,
 }
 
 impl InputConfig {
@@ -28,7 +29,8 @@ impl InputConfig {
             fps_camera_sensitivity: get_float(popup_section, "fps_camera_sensitivity"),
             pan_camera_sensitivity: get_float(popup_section, "pan_camera_sensitivity"),
             obit_camera_sensitivity: get_float(popup_section, "orbit_camera_sensitivity"),
-            zoom_camera_sensitivity: get_float(popup_section, "zoom_camera_sensitivity")
+            zoom_camera_sensitivity: get_float(popup_section, "zoom_camera_sensitivity"),
+            zoom_clip_distance: get_float(popup_section, "zoom_clip_distance"),
         }
     }
 }

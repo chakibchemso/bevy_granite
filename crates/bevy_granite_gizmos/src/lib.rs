@@ -11,21 +11,11 @@ mod input;
 pub mod selection;
 mod ui;
 
-pub mod utils {
-    /// A marker component that an entity should be ignored by the editor
-    /// This will be more powerful then not having Bridge
-    /// As this is explicitly added to an entity
-    #[derive(bevy::ecs::component::Component, Default)]
-    // Im adding this so you cant select the editor camera
-    // and to stop a crash because you can select a gizmo that then despawns its self
-    pub struct EditorIgnore;
-}
-
 // Re-export
 pub use camera::GizmoCamera;
 pub use gizmos::{
-    despawn_rotate_gizmo, despawn_transform_gizmo, GizmoMesh, GizmoParent, GizmoSnap, GizmoType,
-    RotateGizmo, SelectedGizmo, TransformGizmo,
+    despawn_rotate_gizmo, GizmoMesh, GizmoParent, GizmoSnap, GizmoType, RotateGizmo, SelectedGizmo,
+    TransformGizmo,
 };
 pub use input::{watch_gizmo_change, DragState, GizmoAxis};
 pub use selection::{

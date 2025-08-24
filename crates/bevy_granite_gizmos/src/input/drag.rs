@@ -45,3 +45,24 @@ pub enum GizmoAxis {
     #[default]
     None,
 }
+
+impl GizmoAxis {
+    pub fn to_vec3(self) -> Vec3 {
+        match self {
+            GizmoAxis::X => Vec3::X,
+            GizmoAxis::Y => Vec3::Y,
+            GizmoAxis::Z => Vec3::Z,
+            GizmoAxis::All => Vec3::ONE,
+            GizmoAxis::None => Vec3::ZERO,
+        }
+    }
+
+    pub fn rotation(self) -> Quat {
+        match self {
+            GizmoAxis::X => Quat::from_rotation_z((90f32).to_radians()),
+            GizmoAxis::Y => Quat::IDENTITY,
+            GizmoAxis::Z => Quat::from_rotation_x((90f32).to_radians()),
+            GizmoAxis::None | GizmoAxis::All => Quat::IDENTITY,
+        }
+    }
+}
