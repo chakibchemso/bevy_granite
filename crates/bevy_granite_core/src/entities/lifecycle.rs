@@ -1,11 +1,11 @@
-use crate::{events::{RequestDespawnSerializableEntities, RequestDespawnBySource}};
+use super::{IdentityData, SpawnSource};
+use crate::events::{RequestDespawnBySource, RequestDespawnSerializableEntities};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
-use super::{IdentityData, SpawnSource};
 
-use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, EventReader, Query, With};
+use bevy::prelude::{Commands, Entity, EventReader, Query, With};
 
 /// If entity has IdentityData, it is despawned
 pub fn despawn_entities_system(
@@ -33,10 +33,10 @@ pub fn despawn_entities_by_source_system(
 ) {
     for RequestDespawnBySource(source) in despawn_watcher.read() {
         let mut despawned_count = 0;
-        
+
         for (entity, entity_source) in serializable_query.iter() {
             if entity_source.0 == *source {
-                commands.entity(entity).despawn_recursive();
+                commands.entity(entity).despawn();
                 despawned_count += 1;
             }
         }
@@ -58,6 +58,6 @@ pub fn despawn_recursive_serializable_entities(
     serializable_query: &Query<Entity, With<IdentityData>>,
 ) {
     for entity in serializable_query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }

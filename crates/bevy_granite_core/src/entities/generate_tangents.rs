@@ -14,13 +14,15 @@ pub struct NeedsTangents;
 pub fn generate_tangents_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    query: Query<(Entity, &Handle<Mesh>), With<NeedsTangents>>,
+    query: Query<(Entity, &Mesh3d), With<NeedsTangents>>,
     asset_server: Res<AssetServer>,
 ) {
     let mut generated_count = 0;
 
     for (entity, mesh_handle) in query.iter() {
-        if asset_server.get_load_state(mesh_handle) == Some(bevy::asset::LoadState::Loaded) {
+        if let Some(bevy::asset::LoadState::Loaded) =
+            asset_server.get_load_state(mesh_handle.0.id())
+        {
             if let Some(mesh) = meshes.get_mut(mesh_handle) {
                 if mesh.attribute(Mesh::ATTRIBUTE_TANGENT).is_none() {
                     if let Err(e) = mesh.generate_tangents() {

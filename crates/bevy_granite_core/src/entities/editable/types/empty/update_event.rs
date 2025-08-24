@@ -17,8 +17,8 @@ impl Empty {
             "Requesting directional light entity update"
         );
 
-        request_update.empty.send(UserUpdatedEmptyEvent {
-            entity: entity,
+        request_update.empty.write(UserUpdatedEmptyEvent {
+            entity,
             data: self.clone(),
         });
     }

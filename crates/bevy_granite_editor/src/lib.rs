@@ -1,25 +1,25 @@
 use crate::setup::{editor_info, setup_ui_style};
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 
-pub mod entities;
 pub mod editor_state;
+pub mod entities;
 pub mod input;
 pub mod interface;
 pub mod setup;
 pub mod utils;
 pub mod viewport;
 
-use entities::AssetPlugin;
 use editor_state::ConfigPlugin;
+use entities::AssetPlugin;
 use input::InputPlugin;
 use interface::InterfacePlugin;
 use viewport::ViewportPlugin;
 
-pub use entities::get_entity_bounds_or_fallback;
 pub use editor_state::{
     get_interface_config_float, get_interface_config_str, update_editor_config_field, HELP_CONFIG,
     UI_CONFIG,
 };
+pub use entities::get_entity_bounds_or_fallback;
 pub use interface::events::{
     RequestCameraEntityFrame, RequestEditorToggle, RequestNewParent, RequestRemoveChildren,
     RequestRemoveParents, RequestToggleCameraSync,
@@ -36,7 +36,7 @@ impl Plugin for BevyGraniteEditor {
             //
             //Plugins
             //
-            .add_plugins(FrameTimeDiagnosticsPlugin) // Bevy internal frame plugin
+            .add_plugins(FrameTimeDiagnosticsPlugin::default()) // Bevy internal frame plugin
             //
             // Internal plugins
             .add_plugins(InputPlugin)
@@ -51,5 +51,7 @@ impl Plugin for BevyGraniteEditor {
             // Startup
             //
             .add_systems(PostStartup, (setup_ui_style, editor_info));
+
+        app.add_plugins(bevy_granite_expose::BevyGraniteExposePlugin); // this will register internal bevy components so they can be used in the editor
     }
 }

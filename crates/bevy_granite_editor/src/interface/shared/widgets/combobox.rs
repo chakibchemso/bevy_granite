@@ -74,6 +74,7 @@ fn generic_selector_popup<T: SelectableItem>(
     let mut popup_changed = false;
 
     if ui.memory(|mem| mem.is_popup_open(popup_id)) {
+        ui.memory_mut(|mem| mem.keep_popup_open(popup_id));
         let popup_pos = button_response.rect.left_bottom() + egui::vec2(0.0, 4.0);
 
         let area_response = egui::Area::new(popup_id)
@@ -109,7 +110,7 @@ fn generic_selector_popup<T: SelectableItem>(
 
             if let Some(pointer_pos) = ui.input(|i| i.pointer.interact_pos()) {
                 if !popup_rect.contains(pointer_pos) && !button_rect.contains(pointer_pos) {
-                    ui.memory_mut(|mem| mem.close_popup());
+                    ui.memory_mut(|mem| mem.close_popup(popup_id));
                 }
             }
         }
@@ -275,9 +276,10 @@ fn combobox_style_button(ui: &mut Ui, button_text: &str) -> Response {
 
         ui.painter().rect(
             rect.expand(visuals.expansion),
-            visuals.rounding,
+            visuals.corner_radius,
             visuals.bg_fill,
             visuals.bg_stroke,
+            egui::StrokeKind::Middle,
         );
 
         let inner_rect = rect.shrink2(margin);
@@ -294,7 +296,7 @@ fn combobox_style_button(ui: &mut Ui, button_text: &str) -> Response {
             text_color,
         );
 
-        paint_dropdown_arrow(ui, icon_rect, &visuals);
+        paint_dropdown_arrow(ui, icon_rect, visuals);
     }
 
     response
@@ -310,7 +312,7 @@ fn handle_popup_button(
     if button_response.clicked() {
         let is_open = ui.memory(|mem| mem.is_popup_open(popup_id));
         if is_open {
-            ui.memory_mut(|mem| mem.close_popup());
+            ui.memory_mut(|mem| mem.close_popup(popup_id));
         } else {
             ui.memory_mut(|mem| mem.open_popup(popup_id));
             search_filter.clear();
@@ -365,7 +367,7 @@ pub fn component_selector_combo(
             {
                 *component_changed = true;
                 *registered_add_request = Some((*component_name).clone());
-                ui.memory_mut(|mem| mem.close_popup());
+                ui.memory_mut(|mem| mem.close_popup(popup_id));
                 return true;
             }
             false
@@ -426,7 +428,7 @@ pub fn material_selector_combo(
                         new_material.friendly_name
                     );
 
-                    ui.memory_mut(|mem| mem.close_popup());
+                    ui.memory_mut(|mem| mem.close_popup(popup_id));
                     return true;
                 }
                 false

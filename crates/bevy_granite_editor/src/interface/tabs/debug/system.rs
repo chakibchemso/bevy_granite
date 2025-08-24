@@ -1,8 +1,8 @@
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{Entity, Name, Query, Res, ResMut, With};
-use bevy::utils::HashMap;
 use bevy_granite_core::{AvailableEditableMaterials, IdentityData, SpawnSource};
-use bevy_granite_gizmos::{Selected, ActiveSelection};
+use bevy_granite_gizmos::{ActiveSelection, Selected};
 
 use super::{ActiveObjectDetails, SelectionInfo};
 use crate::{
@@ -38,7 +38,7 @@ pub fn update_debug_tab_ui_system(
                         .get(active_entity)
                         .ok()
                         .map(|s| s.0.clone());
-                    
+
                     ActiveObjectDetails {
                         entity: Some(active_entity),
                         name,

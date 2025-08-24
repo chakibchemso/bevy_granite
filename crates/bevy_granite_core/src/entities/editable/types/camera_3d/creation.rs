@@ -4,10 +4,9 @@ use crate::{
     HasRuntimeData, IdentityData,
 };
 use bevy::{
-    core::Name,
-    core_pipeline::core_3d::Camera3dBundle,
+    core_pipeline::core_3d::Camera3d,
     ecs::{bundle::Bundle, entity::Entity, system::Commands},
-    pbr::VolumetricFogSettings,
+    prelude::Name,
     render::camera::Camera,
     transform::components::Transform,
 };
@@ -57,23 +56,28 @@ impl Camera3D {
             commands.spawn(Self::get_bundle(self.clone(), identity.clone(), transform));
 
         if self.has_volumetric_fog {
+            let mut fog = bevy::pbr::VolumetricFog::default();
+            let mut fog_volume = bevy::pbr::FogVolume::default();
+
             if let Some(fog_settings) = &self.volumetric_fog_settings {
-                entity.insert(VolumetricFogSettings {
-                    fog_color: fog_settings.fog_color,
-                    absorption: fog_settings.absorption,
-                    ambient_color: fog_settings.ambient_color,
-                    ambient_intensity: fog_settings.ambient_intensity,
-                    step_count: fog_settings.step_count,
-                    light_intensity: fog_settings.light_intensity,
-                    light_tint: fog_settings.light_tint,
-                    density: fog_settings.density,
-                    max_depth: fog_settings.max_depth,
-                    scattering: fog_settings.scattering,
-                    scattering_asymmetry: fog_settings.scattering_asymmetry,
-                });
-            } else {
-                entity.insert(VolumetricFogSettings::default());
+                fog.ambient_color = fog_settings.ambient_color;
+                fog.ambient_intensity = fog_settings.ambient_intensity;
+                fog.step_count = fog_settings.step_count;
+                fog_volume.fog_color = fog_settings.fog_color;
+                fog_volume.absorption = fog_settings.absorption;
+                fog_volume.light_intensity = fog_settings.light_intensity;
+                fog_volume.light_tint = fog_settings.light_tint;
+                fog_volume.density_factor = fog_settings.density;
+                fog_volume.scattering = fog_settings.scattering;
+                fog_volume.scattering_asymmetry = fog_settings.scattering_asymmetry;
+
+                // TODO: work out the bevy 0.16 equivalent for max_depth
+                // entity.insert(VolumetricFogSettings {
+                //     max_depth: fog_settings.max_depth,
+                // });
             }
+            //I don't know if the fog volume should be attached to the camera or its own entity
+            entity.insert((fog, fog_volume));
         }
         entity.id()
     }
@@ -85,14 +89,12 @@ impl Camera3D {
         transform: Transform,
     ) -> impl Bundle {
         (
-            Camera3dBundle {
-                camera: Camera {
-                    is_active: camera_3d.is_active,
-                    ..Default::default()
-                },
-                transform,
+            Camera3d::default(),
+            Camera {
+                is_active: camera_3d.is_active,
                 ..Default::default()
             },
+            transform,
             Name::new(identity.name.clone()),
             GraniteEditorSerdeEntity,
             HasRuntimeData,

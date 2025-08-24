@@ -1,5 +1,6 @@
 use bevy::{
-    ecs::{component::Component, system::Resource},
+    ecs::component::Component,
+    ecs::resource::Resource,
     prelude::{
         Quat, ReflectComponent, ReflectDefault, ReflectDeserialize, ReflectFromReflect,
         ReflectSerialize, Vec3,
@@ -141,7 +142,7 @@ impl Default for PromptData {
 
 // Re-exports
 pub use component_editor::{
-    is_bridge_component_check, BridgeTag, ComponentEditor, ReflectedComponent,
+    is_bridge_component_check, BridgeTag, ComponentEditor, ExposedToEditor, ReflectedComponent,
 };
 pub use deserialize::{deserialize_entities, GraniteEditorSerdeEntity};
 pub use editable::{

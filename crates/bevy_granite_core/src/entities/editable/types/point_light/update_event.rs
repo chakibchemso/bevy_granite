@@ -23,10 +23,12 @@ impl PointLightData {
             "Requesting point light entity update"
         );
 
-        request_update.point_light.send(UserUpdatedPointLightEvent {
-            entity: entity,
-            data: self.clone(),
-        });
+        request_update
+            .point_light
+            .write(UserUpdatedPointLightEvent {
+                entity,
+                data: self.clone(),
+            });
     }
 }
 

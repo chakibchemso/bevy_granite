@@ -8,22 +8,30 @@ use crate::{
         ActiveSelection, RequestSelectEntityRangeEvent, Selected,
     },
 };
-use bevy::ecs::system::Commands;
-use bevy::prelude::{
-    Added, BuildChildren, Component, Entity, EventReader, EventWriter, Name, Query,
-    RemovedComponents, Res, ResMut, With,
+use bevy::{
+    ecs::{observer::Trigger, query::Changed, world::OnAdd},
+    prelude::{
+        Added, Component, Entity, EventReader, EventWriter, Name, Query, RemovedComponents, Res,
+        ResMut, With,
+    },
+};
+use bevy::{
+    ecs::{query::QueryEntityError, system::Commands},
+    picking::{
+        events::{Click, Pointer},
+        hover::PickingInteraction,
+    },
 };
 use bevy_granite_core::{IconProxy, UserInput};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
-use bevy_mod_raycast::prelude::{CursorRay, Raycast};
 
 pub fn apply_pending_parents(mut commands: Commands, query: Query<(Entity, &ParentTo)>) {
     for (entity, parent_to) in &query {
-        if let Some(mut parent) = commands.get_entity(parent_to.0) {
-            parent.push_children(&[entity]);
+        if let Ok(mut parent) = commands.get_entity(parent_to.0) {
+            parent.add_children(&[entity]);
             commands.entity(entity).remove::<ParentTo>();
         } else {
             log!(
@@ -40,39 +48,6 @@ pub fn apply_pending_parents(mut commands: Commands, query: Query<(Entity, &Pare
 
 #[derive(Component)]
 pub struct ParentTo(pub Entity);
-
-// Used when Active Selection is no longer available
-pub fn active_selected_removed_watcher(
-    mut removed_selected: RemovedComponents<ActiveSelection>,
-    mut despawn_gizmo_writer: EventWriter<DespawnGizmoEvent>,
-    selected_gizmo: Res<SelectedGizmo>,
-) {
-    for _entity in removed_selected.read() {
-        log!(
-            LogType::Editor,
-            LogLevel::Info,
-            LogCategory::Entity,
-            "Lost old active selection"
-        );
-        despawn_gizmo_writer.send(DespawnGizmoEvent(selected_gizmo.value));
-    }
-}
-
-//  Used when the Active Selection becomes available
-pub fn active_selected_watcher(
-    active_selection: Query<Entity, (With<ActiveSelection>, Added<ActiveSelection>)>,
-    mut gizmo_spawn_writer: EventWriter<SpawnGizmoEvent>,
-) {
-    for entity in active_selection.iter() {
-        log!(
-            LogType::Editor,
-            LogLevel::Info,
-            LogCategory::Entity,
-            "Active selection found"
-        );
-        gizmo_spawn_writer.send(SpawnGizmoEvent(entity));
-    }
-}
 
 // used when an entity is selected
 pub fn select_entity_watcher(
@@ -195,103 +170,202 @@ pub fn deselect_all_entities(
     }
 }
 
-// System for entity interaction
-pub fn handle_entity_selection(
-    mut select_event_writer: EventWriter<RequestSelectEntityEvent>,
-    mut deselect_event_writer: EventWriter<RequestDeselectAllEntitiesEvent>,
+// // System for entity interaction
+// pub fn handle_entity_selection(
+//     mut select_event_writer: EventWriter<RequestSelectEntityEvent>,
+//     mut deselect_event_writer: EventWriter<RequestDeselectAllEntitiesEvent>,
+//     active_selection: Query<Entity, With<ActiveSelection>>,
+//     user_input: Res<UserInput>,
+//     interaction: Query<
+//         (
+//             Entity,
+//             Option<&GizmoMesh>,
+//             Option<&IconProxy>,
+//             &Name,
+//             &PickingInteraction,
+//         ),
+//         Changed<PickingInteraction>,
+//     >,
+//     gizmo_filter: Query<(Entity, Option<&GizmoMesh>, Option<&IconProxy>, &Name)>,
+//     icon_proxy_query: Query<&IconProxy>,
+//     mut raycast_cursor_last_pos: ResMut<RaycastCursorLast>,
+//     mut raycast_cursor_pos: ResMut<RaycastCursorPos>,
+// ) {
+//     if user_input.mouse_left.just_pressed && !user_input.mouse_right.pressed {
+//         if user_input.mouse_over_egui {
+//             return;
+//         }
+
+//         log!(
+//             LogType::Editor,
+//             LogLevel::Info,
+//             LogCategory::Input,
+//             "Cursor over UI: {}",
+//             user_input.mouse_over_egui
+//         );
+
+//         let additive = user_input.shift_left.pressed;
+
+//         let (entity, hit_type) = raycast_at_cursor(interaction);
+
+//         if hit_type == HitType::Gizmo {
+//             return;
+//         }
+//         log(
+//             LogType::Editor,
+//             LogLevel::Info,
+//             LogCategory::Debug,
+//             "Its Here".into(),
+//         );
+
+//         if let Some(entity) = entity {
+//             if hit_type == HitType::Icon || hit_type == HitType::Mesh {
+//                 log!(
+//                     LogType::Editor,
+//                     LogLevel::Info,
+//                     LogCategory::Input,
+//                     "Ray hit: {} entity",
+//                     match hit_type {
+//                         HitType::Icon => "Icon",
+//                         HitType::Mesh => "Mesh",
+//                         _ => "Unknown",
+//                     }
+//                 );
+
+//                 if let Ok(active_entity) = active_selection.single() {
+//                     if active_entity == entity {
+//                         log!(
+//                             LogType::Editor,
+//                             LogLevel::Info,
+//                             LogCategory::Input,
+//                             "Entity already active, skipping event",
+//                         );
+//                         return;
+//                     }
+//                 }
+
+//                 // Check if the hit entity is an icon proxy and redirect to target entity
+//                 let target_entity = if let Ok(icon_proxy) = icon_proxy_query.get(entity) {
+//                     log!(
+//                         LogType::Editor,
+//                         LogLevel::Info,
+//                         LogCategory::Input,
+//                         "Icon proxy hit, redirecting to target entity",
+//                     );
+//                     icon_proxy.target_entity
+//                 } else {
+//                     entity
+//                 };
+
+//                 select_event_writer.write(RequestSelectEntityEvent {
+//                     entity: target_entity,
+//                     additive,
+//                 });
+//                 return;
+//             }
+//         }
+
+//         if hit_type == HitType::Void || hit_type == HitType::None {
+//             log!(
+//                 LogType::Editor,
+//                 LogLevel::Info,
+//                 LogCategory::Input,
+//                 "Could not find an entity, deselecting",
+//             );
+
+//             deselect_event_writer.write(RequestDeselectAllEntitiesEvent);
+//         }
+//     }
+// }
+
+/// when an entity gets ActiveSelection added to it we check if there is already an entity with ActiveSelection
+/// if there is, we remove it for the other entity
+pub fn single_active_observer(
+    mut add_active: Trigger<OnAdd, ActiveSelection>,
     active_selection: Query<Entity, With<ActiveSelection>>,
-    user_input: Res<UserInput>,
-    cursor_ray: Res<CursorRay>,
-    mut raycast: Raycast,
-    gizmo_filter: Query<(Entity, Option<&GizmoMesh>, Option<&IconProxy>, &Name)>,
-    icon_proxy_query: Query<&IconProxy>,
-    mut raycast_cursor_last_pos: ResMut<RaycastCursorLast>,
-    mut raycast_cursor_pos: ResMut<RaycastCursorPos>,
+    mut commands: Commands,
 ) {
-    if user_input.mouse_left.just_pressed && !user_input.mouse_right.pressed {
-        if user_input.mouse_over_egui {
+    add_active.propagate(false);
+    if active_selection.single().is_err() {
+        for entity in &active_selection {
+            log(
+                LogType::Editor,
+                LogLevel::Info,
+                LogCategory::Input,
+                format!("Entity {} is no longer active", entity.index()),
+            );
+            if entity != add_active.target() {
+                commands.entity(entity).remove::<ActiveSelection>();
+            }
+        }
+    }
+}
+
+pub fn handle_entity_selection(
+    mut on_click: Trigger<Pointer<Click>>,
+    mut commands: Commands,
+    selected: Query<Entity, With<Selected>>,
+    active_selection: Query<Entity, With<ActiveSelection>>,
+    ignored: Query<(), With<crate::utils::EditorIgnore>>,
+) {
+    if on_click.button != bevy::picking::pointer::PointerButton::Primary {
+        return;
+    }
+    match ignored.get(on_click.target()) {
+        Ok(_) => {
+            log!(
+                "ignoring EditorIgnore entity: {}",
+                on_click.target().index()
+            );
             return;
         }
-
+        Err(QueryEntityError::EntityDoesNotExist(_)) => {
+            log!("Entity does not exist: {}", on_click.target().index());
+            return;
+        }
+        Err(_) => {}
+    }
+    if on_click.target().index() == 0 {
         log!(
             LogType::Editor,
             LogLevel::Info,
             LogCategory::Input,
-            "Cursor over UI: {}",
-            user_input.mouse_over_egui
+            "Clicked on window?, ignoring"
         );
-
-        let additive = user_input.shift_left.pressed;
-
-        let (entity, hit_type) = raycast_at_cursor(
-            &cursor_ray,
-            &mut raycast,
-            gizmo_filter,
-            &mut raycast_cursor_last_pos,
-            &mut raycast_cursor_pos,
+        return;
+    }
+    on_click.propagate(false);
+    let entity = on_click.target();
+    if active_selection.get(entity).is_ok() {
+        log!(
+            LogType::Editor,
+            LogLevel::Info,
+            LogCategory::Input,
+            "Deselecting Entity {}",
+            entity.index()
         );
-
-        if hit_type == HitType::Gizmo {
-            return;
-        }
-
-        if let Some(entity) = entity {
-            if hit_type == HitType::Icon || hit_type == HitType::Mesh {
-                log!(
-                    LogType::Editor,
-                    LogLevel::Info,
-                    LogCategory::Input,
-                    "Ray hit: {} entity",
-                    match hit_type {
-                        HitType::Icon => "Icon",
-                        HitType::Mesh => "Mesh",
-                        _ => "Unknown"
-                    }
-                );
-
-                if let Ok(active_entity) = active_selection.get_single() {
-                    if active_entity == entity {
-                        log!(
-                            LogType::Editor,
-                            LogLevel::Info,
-                            LogCategory::Input,
-                            "Entity already active, skipping event",
-                        );
-                        return;
-                    }
-                }
-
-                // Check if the hit entity is an icon proxy and redirect to target entity
-                let target_entity = if let Ok(icon_proxy) = icon_proxy_query.get(entity) {
-                    log!(
-                        LogType::Editor,
-                        LogLevel::Info,
-                        LogCategory::Input,
-                        "Icon proxy hit, redirecting to target entity",
-                    );
-                    icon_proxy.target_entity
-                } else {
-                    entity
-                };
-
-                select_event_writer.send(RequestSelectEntityEvent {
-                    entity: target_entity,
-                    additive,
-                });
-                return;
-            }
-        }
-
-        if hit_type == HitType::Void || hit_type == HitType::None {
-            log!(
-                LogType::Editor,
-                LogLevel::Info,
-                LogCategory::Input,
-                "Could not find an entity, deselecting",
-            );
-
-            deselect_event_writer.send(RequestDeselectAllEntitiesEvent);
-        }
+        commands
+            .entity(entity)
+            .remove::<(ActiveSelection, Selected)>();
+    }
+    if selected.get(on_click.target()).is_ok() {
+        log!(
+            LogType::Editor,
+            LogLevel::Info,
+            LogCategory::Input,
+            "Retargeting Entity {}",
+            entity.index()
+        );
+        commands.entity(entity).insert(ActiveSelection);
+    } else {
+        log!(
+            LogType::Editor,
+            LogLevel::Info,
+            LogCategory::Input,
+            "Selecting Entity {}",
+            entity.index()
+        );
+        commands.entity(entity).insert((Selected, ActiveSelection));
     }
 }
 

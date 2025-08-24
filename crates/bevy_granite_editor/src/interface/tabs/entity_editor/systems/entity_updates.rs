@@ -13,7 +13,8 @@ use bevy::{
         system::Commands,
         world::{Mut, World},
     },
-    prelude::{Entity, Handle, Name, Parent, StandardMaterial, Transform, With},
+    pbr::MeshMaterial3d,
+    prelude::{ChildOf, Entity, Handle, Name, StandardMaterial, Transform, With},
     transform::components::GlobalTransform,
 };
 use bevy::{
@@ -50,7 +51,7 @@ use bevy_granite_logging::{
 pub fn update_entity_with_new_transform_system(
     mut transform_updated_reader: EventReader<UserUpdatedTransformEvent>,
     mut e_query: Query<
-        (Entity, &mut Transform, &GlobalTransform, Option<&Parent>),
+        (Entity, &mut Transform, &GlobalTransform, Option<&ChildOf>),
         (Without<GizmoParent>, With<IdentityData>),
     >,
     mut g_query: Query<(Entity, &mut Transform), (With<GizmoParent>, Without<IdentityData>)>,
@@ -66,7 +67,7 @@ pub fn update_entity_with_new_transform_system(
 
             if let Some(parent_entity) = parent {
                 // Entity has a parent - need to compute local transform from desired global transform
-                if let Ok(parent_global) = parent_query.get(**parent_entity) {
+                if let Ok(parent_global) = parent_query.get(parent_entity.parent()) {
                     // Use GlobalTransform's affine method to get the inverse
                     let parent_global_inverse = parent_global.affine().inverse();
                     let target_global_affine = GlobalTransform::from(target_global).affine();
@@ -201,7 +202,7 @@ pub fn update_entity_with_new_identity_system(
                         // adding a 0 handle so it looks pink as a visual placeholder. For truly a "None" material, remove these 2 calls
                         let none_handle = Handle::<StandardMaterial>::default();
                         target_data.current.set_handle(Some(none_handle.clone()));
-                        commands.entity(entity).insert(none_handle);
+                        commands.entity(entity).insert(MeshMaterial3d(none_handle));
                         log!(
                             LogType::Editor,
                             LogLevel::Info,
@@ -238,7 +239,7 @@ fn handle_material_update(
     target_material: &mut EditableMaterial,
     last_material: &mut EditableMaterial,
     needs_mat_update: bool,
-    material_handle: &mut Option<Mut<'_, Handle<StandardMaterial>>>,
+    material_handle: &mut Option<Mut<'_, MeshMaterial3d<StandardMaterial>>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     available_obj_materials: &mut ResMut<AvailableEditableMaterials>,
     asset_server: &Res<AssetServer>,
@@ -349,7 +350,7 @@ fn handle_material_update(
         // Update material handle if both handles exist
         if let Some(ref handle) = target_material.handle {
             if let Some(ref mut mat_handle) = material_handle {
-                **mat_handle = handle.clone();
+                mat_handle.0 = handle.clone();
             }
         }
 
@@ -389,7 +390,7 @@ fn handle_material_update(
         // Update entity's material handle and send event
         if let Some(updated_handle) = &target_material.handle {
             if let Some(ref mut handle) = material_handle {
-                **handle = updated_handle.clone();
+                handle.0 = updated_handle.clone();
             }
             log!(
                 LogType::Editor,
@@ -398,7 +399,7 @@ fn handle_material_update(
                 "Sending material handle update to world"
             );
 
-            material_handle_update_writer.send(MaterialHandleUpdateEvent {
+            material_handle_update_writer.write(MaterialHandleUpdateEvent {
                 skip_entity: requester,
                 path: target_material.path.clone(),
                 version: target_material.version,
@@ -415,7 +416,7 @@ pub fn update_entity_with_new_components_system(
     for UserUpdatedComponentsEvent { entity, data } in components_updated_reader.read() {
         let entity = *entity;
         let data = data.clone();
-        commands.add(move |world: &mut World| {
+        commands.queue(move |world: &mut World| {
             if let Some(component_editor) = world.remove_resource::<ComponentEditor>() {
                 let component_editor =
                     handle_component_update(component_editor, world, entity, &data);
@@ -522,7 +523,7 @@ pub fn handle_material_deletion_system(
 
                     commands
                         .entity(entity)
-                        .insert(Handle::<StandardMaterial>::default());
+                        .insert(MeshMaterial3d::<StandardMaterial>::default());
                 }
             }
         }

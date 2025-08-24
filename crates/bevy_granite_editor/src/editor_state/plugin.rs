@@ -1,9 +1,10 @@
 use bevy::{
     app::PostStartup,
-    ecs::{schedule::IntoSystemConfigs, system::Resource},
+    ecs::{resource::Resource, schedule::IntoScheduleConfigs},
     prelude::{App, Plugin, Update},
 };
 
+use super::editor::update_editor_vis_system;
 use crate::{
     editor_state::{
         load_editor_settings_toml, save_dock_on_window_close_system, update_active_world_system,
@@ -11,7 +12,6 @@ use crate::{
     interface::EditorSettingsTabData,
     setup::is_editor_active,
 };
-use super::editor::update_editor_vis_system;
 
 #[derive(Resource, Clone)]
 pub struct EditorState {
@@ -23,7 +23,7 @@ pub struct EditorState {
 
     pub config_loaded: bool,
     pub layout_loaded: bool,
-    
+
     /// Track all loaded sources (world files/paths) that have entities spawned
     pub loaded_sources: std::collections::HashSet<String>,
 }

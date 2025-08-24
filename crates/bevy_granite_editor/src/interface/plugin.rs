@@ -1,27 +1,29 @@
 use super::{
     cache::update_entity_cache_system,
     events::{
-        MaterialHandleUpdateEvent, MaterialDeleteEvent, PopupMenuRequestedEvent, RequestCameraEntityFrame,
-        RequestEditorToggle, RequestNewParent, RequestRemoveChildren, RequestRemoveParents,
-        RequestToggleCameraSync, UserRequestGraniteTypeViaPopup, UserUpdatedComponentsEvent,
-        UserUpdatedIdentityEvent, UserUpdatedTransformEvent, SetActiveWorld
+        MaterialDeleteEvent, MaterialHandleUpdateEvent, PopupMenuRequestedEvent,
+        RequestCameraEntityFrame, RequestEditorToggle, RequestNewParent, RequestRemoveChildren,
+        RequestRemoveParents, RequestToggleCameraSync, SetActiveWorld,
+        UserRequestGraniteTypeViaPopup, UserUpdatedComponentsEvent, UserUpdatedIdentityEvent,
+        UserUpdatedTransformEvent,
     },
     layout::dock_ui_system,
     popups::{handle_popup_requests_system, show_active_popups_system},
     tabs::{
-        handle_material_deletion_system, update_debug_tab_ui_system, update_editor_settings_tab_system,
-        update_entity_editor_tab_system, update_entity_with_new_components_system,
-        update_entity_with_new_identity_system, update_entity_with_new_transform_system,
-        update_log_tab_system, update_material_handle_system, update_node_tree_tabs_system,
-        RequestReparentEntityEvent,
+        handle_material_deletion_system, update_debug_tab_ui_system,
+        update_editor_settings_tab_system, update_entity_editor_tab_system,
+        update_entity_with_new_components_system, update_entity_with_new_identity_system,
+        update_entity_with_new_transform_system, update_log_tab_system,
+        update_material_handle_system, update_node_tree_tabs_system, RequestReparentEntityEvent,
     },
     BottomDockState, EntityUIDataCache, PopupState, SideDockState,
 };
 use crate::{interface::RequestRemoveParentsFromEntities, setup::is_editor_active};
 use bevy::{
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
     prelude::{App, Handle, Mesh, Plugin, StandardMaterial, Update},
 };
+use bevy_egui::EguiPrimaryContextPass;
 
 pub struct InterfacePlugin;
 impl Plugin for InterfacePlugin {
@@ -64,7 +66,7 @@ impl Plugin for InterfacePlugin {
             // Schedule systems
             //
             .add_systems(
-                Update,
+                EguiPrimaryContextPass,
                 (
                     //
                     // Handle UI requests to update entities
@@ -98,6 +100,7 @@ impl Plugin for InterfacePlugin {
                     update_debug_tab_ui_system,
                     update_node_tree_tabs_system,
                 )
+                    .chain()
                     .run_if(is_editor_active),
             );
     }

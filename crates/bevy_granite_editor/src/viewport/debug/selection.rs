@@ -7,6 +7,7 @@ use bevy::{
     gizmos::gizmos::Gizmos,
     math::Vec3,
     prelude::{Assets, Handle, Mesh, Res, With},
+    render::mesh::Mesh3d,
     transform::components::GlobalTransform,
 };
 use bevy_granite_core::IdentityData;
@@ -18,7 +19,7 @@ fn should_skip_bounds_rendering(editor_state: &EditorState) -> bool {
 
 pub fn show_active_selection_bounds_system(
     query: Query<(Entity, &GlobalTransform, &IdentityData)>,
-    mesh_query: Query<&Handle<Mesh>>,
+    mesh_query: Query<&Mesh3d>,
     active_query: Query<Entity, With<ActiveSelection>>,
     mut gizmos: Gizmos<SelectionRenderer>,
     meshes: Res<Assets<Mesh>>,
@@ -49,7 +50,7 @@ pub fn show_active_selection_bounds_system(
 
 pub fn show_selected_entities_bounds_system(
     query: Query<(Entity, &GlobalTransform, &IdentityData), With<Selected>>,
-    mesh_query: Query<&Handle<Mesh>>,
+    mesh_query: Query<&Mesh3d>,
     mut gizmos: Gizmos<SelectionRenderer>,
     meshes: Res<Assets<Mesh>>,
     editor_state: Res<EditorState>,

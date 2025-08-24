@@ -1,15 +1,14 @@
 use super::{
-    active_selected_removed_watcher, active_selected_watcher, apply_pending_parents,
-    deselect_all_entities_watcher, deselect_entity_watcher, duplicate_all_selection_system,
-    duplicate_entity_system, handle_entity_selection, select_entity_range_watcher,
-    select_entity_watcher, RaycastCursorLast, RaycastCursorPos, RequestDeselectAllEntitiesEvent,
-    RequestDeselectEntityEvent, RequestDuplicateAllSelectionEvent, RequestDuplicateEntityEvent,
-    RequestSelectEntityEvent, RequestSelectEntityRangeEvent,
+    apply_pending_parents, deselect_all_entities_watcher, deselect_entity_watcher,
+    duplicate_all_selection_system, duplicate_entity_system, handle_entity_selection,
+    select_entity_range_watcher, select_entity_watcher, RaycastCursorLast, RaycastCursorPos,
+    RequestDeselectAllEntitiesEvent, RequestDeselectEntityEvent, RequestDuplicateAllSelectionEvent,
+    RequestDuplicateEntityEvent, RequestSelectEntityEvent, RequestSelectEntityRangeEvent,
 };
 use crate::is_gizmos_active;
 use bevy::{
     app::{App, Plugin, PostUpdate, Update},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
     math::Vec3,
 };
 
@@ -45,10 +44,7 @@ impl Plugin for SelectionPlugin {
                 Update,
                 (
                     select_entity_watcher,
-                    handle_entity_selection,
-                    active_selected_removed_watcher,
                     select_entity_range_watcher,
-                    active_selected_watcher.after(active_selected_removed_watcher),
                     deselect_all_entities_watcher,
                     deselect_entity_watcher,
                     duplicate_entity_system.after(handle_entity_selection),
@@ -56,6 +52,8 @@ impl Plugin for SelectionPlugin {
                 )
                     .run_if(is_gizmos_active),
             )
-            .add_systems(PostUpdate, (apply_pending_parents).run_if(is_gizmos_active));
+            .add_systems(PostUpdate, (apply_pending_parents).run_if(is_gizmos_active))
+            .add_observer(handle_entity_selection)
+            .add_observer(super::manager::single_active_observer);
     }
 }

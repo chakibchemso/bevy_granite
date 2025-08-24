@@ -1,28 +1,39 @@
 use crate::{editor_state::INPUT_CONFIG, viewport::camera::CameraTarget};
+use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::{
+    core_pipeline::core_3d::Camera3d,
     input::mouse::{MouseMotion, MouseWheel},
     prelude::{
-        Camera, Camera3dBundle, Commands, EulerRot, EventReader, Local, Name, Quat, Query, Res,
-        ResMut, Time, Transform, Vec2, Vec3, With,
+        Camera, Commands, EulerRot, EventReader, Local, Name, Quat, Query, Res, ResMut, Time,
+        Transform, Vec2, Vec3, With,
     },
     render::view::RenderLayers,
 };
 use bevy_granite_core::{TreeHiddenEntity, UICamera, UserInput};
+use bevy_granite_gizmos::utils::EditorIgnore;
 
-pub fn add_gizmo_camera(mut commands: Commands) {
+pub fn add_ui_camera(mut commands: Commands) {
+    let context = bevy_egui::EguiContext::default();
+
     let _ui_camera = commands
         .spawn((
-            Camera3dBundle {
-                transform: Transform::from_xyz(2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-                ..Default::default()
-            },
+            Transform::from_xyz(2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            Camera3d::default(),
             Name::new("UI Camera"),
+            Tonemapping::None, // need this so bevy rendering doesnt break without tonemapping_luts
+            bevy::picking::Pickable {
+                // this is so it does not block any other objects
+                should_block_lower: false,
+                is_hoverable: false,
+            },
+            EditorIgnore, // This camera should not be selectable in the editor
         ))
         .insert(Camera {
             order: 2,
             ..Default::default()
         })
         .insert(UICamera)
+        .insert((bevy_egui::PrimaryEguiContext, context))
         .insert(TreeHiddenEntity)
         .insert(bevy_granite_gizmos::GizmoCamera)
         .insert(RenderLayers::layer(14)) // 14 is our UI/Gizmo layer.
@@ -52,7 +63,7 @@ pub fn handle_movement(
     time: Res<Time>,
     mut movement_speed: Local<f32>,
 ) {
-    let delta_time = time.delta_seconds();
+    let delta_time = time.delta_secs();
     let base_movement_speed = INPUT_CONFIG.fps_camera_speed;
     let base_rotation_sensitivity = INPUT_CONFIG.fps_camera_sensitivity / 100.; // divide by is to somewhat normalize these values relative to each other
     if *movement_speed == 0.0 {
