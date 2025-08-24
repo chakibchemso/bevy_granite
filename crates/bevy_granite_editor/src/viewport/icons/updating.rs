@@ -40,7 +40,7 @@ pub fn update_icon_entities_system(
     }
     let config = &editor_state.config.viewport.visualizers;
 
-    let camera_transform = match camera_query.get_single() {
+    let camera_transform = match camera_query.single() {
         Ok(cam) => cam,
         Err(_) => return,
     };
@@ -56,7 +56,7 @@ pub fn update_icon_entities_system(
 
         // Hide active icon if not showing active icons
         if !config.icon_show_active {
-            if let Ok(target) = active_query.get_single() {
+            if let Ok(target) = active_query.single() {
                 if icon_entity.target_entity == target {
                     *visibility = Visibility::Hidden;
                 }
@@ -65,7 +65,7 @@ pub fn update_icon_entities_system(
 
         // Hide active when rotating
         if config.icon_show_active {
-            if let Ok(target) = active_query.get_single() {
+            if let Ok(target) = active_query.single() {
                 if icon_entity.target_entity == target {
                     if rotating {
                         *visibility = Visibility::Hidden;
@@ -85,7 +85,7 @@ pub fn update_icon_entities_system(
         // Update icon material color
         if let Some(material) = materials.get_mut(material_handle) {
             let mut color = Color::srgb_from_array(config.icon_color);
-            if let Ok(target) = active_query.get_single() {
+            if let Ok(target) = active_query.single() {
                 if icon_entity.target_entity == target {
                     color = Color::srgb_from_array(config.selection_active_color);
                 }
@@ -136,7 +136,7 @@ pub fn update_icon_entities_system(
 
             // Apply world down offset only when entity is selected - gets visually messy
             let is_active = active_query
-                .get_single()
+                .single()
                 .map_or(false, |target| icon_entity.target_entity == target);
             //let is_selected = selected_query.iter().any(|e| icon_entity.target_entity == e);
 

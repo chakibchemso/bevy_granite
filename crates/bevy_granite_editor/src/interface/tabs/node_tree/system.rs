@@ -89,7 +89,7 @@ pub fn update_node_tree_tabs_system(
     for (_, tab) in right_dock.dock_state.iter_all_tabs_mut() {
         if let SideTab::NodeTree { ref mut data, .. } = tab {
             let previous_selection = data.active_selection;
-            data.active_selection = active_selection.get_single().ok();
+            data.active_selection = active_selection.single().ok();
             data.selected_entities = all_selected.iter().collect();
 
             let (entities_changed, data_changed, hierarchy_changed) = if data.filtered_hierarchy {

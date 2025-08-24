@@ -146,7 +146,7 @@ pub fn handle_init_rotate_drag(
 
         // Step 2: Get the selected entity
         let selection_query = queries.p0();
-        let Ok(_selection_entity) = selection_query.get_single() else {
+        let Ok(_selection_entity) = selection_query.single() else {
             return;
         };
 
@@ -188,7 +188,7 @@ pub fn handle_init_rotate_drag(
             drag_state.prev_hit_dir = hit_vec;
 
             // Get and store initial gizmo rotation
-            if let Ok((_, _gizmo_transform, gizmo_world_transform)) = queries.p5().get_single() {
+            if let Ok((_, _gizmo_transform, gizmo_world_transform)) = queries.p5().single() {
                 let (_, initial_gizmo_rotation, _) =
                     gizmo_world_transform.to_scale_rotation_translation();
                 drag_state.initial_gizmo_rotation = initial_gizmo_rotation;
@@ -287,7 +287,7 @@ pub fn handle_rotate_dragging(
         };
 
         // Get all selected entities
-        let selection_entity = match queries.p1().get_single() {
+        let selection_entity = match queries.p1().single() {
             Ok(e) => e,
             Err(_) => return,
         };
@@ -314,7 +314,7 @@ pub fn handle_rotate_dragging(
             drag_state.last_snapped = snapped_angle;
 
             let camera_query = queries.p0();
-            if let Ok(camera_transform) = camera_query.get_single() {
+            if let Ok(camera_transform) = camera_query.single() {
                 let camera_right = camera_transform.rotation * Vec3::X;
                 let camera_up = camera_transform.rotation * Vec3::Y;
                 let yaw = cursor_delta_2d.x * free_rotate_speed;
