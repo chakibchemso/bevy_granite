@@ -2,15 +2,14 @@ use super::ui::expand_to_entity;
 use crate::interface::events::RequestRemoveParentsFromEntities;
 use crate::interface::{SideDockState, SideTab};
 use bevy::ecs::query::Has;
+use bevy::ecs::system::Commands;
 use bevy::{
     ecs::query::{Changed, Or},
     prelude::{ChildOf, Entity, Event, EventWriter, Name, Query, ResMut, With, Without},
 };
 use bevy_granite_core::{GraniteType, IdentityData, TreeHiddenEntity};
-use bevy_granite_gizmos::{
-    ActiveSelection, GizmoMesh, GizmoParent, RequestDeselectEntityEvent, RequestSelectEntityEvent,
-    RequestSelectEntityRangeEvent, Selected,
-};
+use bevy_granite_gizmos::selection::events::EntityEvent;
+use bevy_granite_gizmos::{ActiveSelection, GizmoChildren, GizmoMesh, Selected};
 use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
 
 #[derive(Debug, Clone, Event)]
@@ -75,17 +74,15 @@ pub fn update_node_tree_tabs_system(
         &Name,
         Option<&ChildOf>,
         Option<&IdentityData>,
-        (Has<GizmoParent>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
+        (Has<GizmoChildren>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
     )>,
 
     // detect changes (excluding Parent since we check that manually)
     mut changed_hierarchy: Query<
-        (Has<GizmoParent>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
+        (Has<GizmoChildren>, Has<GizmoMesh>, Has<TreeHiddenEntity>),
         Or<(Changed<Name>, Changed<IdentityData>)>,
     >,
-    mut select_event_writer: EventWriter<RequestSelectEntityEvent>,
-    mut deselect_event_writer: EventWriter<RequestDeselectEntityEvent>,
-    mut select_range_event_writer: EventWriter<RequestSelectEntityRangeEvent>,
+    mut commands: Commands,
     mut reparent_event_writer: EventWriter<RequestReparentEntityEvent>,
     mut remove_parents_event_writer: EventWriter<RequestRemoveParentsFromEntities>,
 ) {
@@ -175,8 +172,8 @@ pub fn update_node_tree_tabs_system(
                                     range_entities.len()
                                 );
 
-                                select_range_event_writer.send(RequestSelectEntityRangeEvent {
-                                    entities: range_entities,
+                                commands.trigger(EntityEvent::SelectRange {
+                                    range: range_entities,
                                     additive: true,
                                 });
                                 // Always set the clicked entity as active selection
@@ -185,8 +182,8 @@ pub fn update_node_tree_tabs_system(
                                 data.previous_active_selection = Some(prev);
                             } else {
                                 // Fallback to single selection if either entity not found in visual order
-                                select_event_writer.send(RequestSelectEntityEvent {
-                                    entity: new_selection,
+                                commands.trigger(EntityEvent::Select {
+                                    target: new_selection,
                                     additive: false,
                                 });
                                 data.previous_active_selection = data.active_selection;
@@ -194,8 +191,8 @@ pub fn update_node_tree_tabs_system(
                             }
                         } else {
                             // No previous selection, fallback to single
-                            select_event_writer.send(RequestSelectEntityEvent {
-                                entity: new_selection,
+                            commands.trigger(EntityEvent::Select {
+                                target: new_selection,
                                 additive: false,
                             });
                             data.previous_active_selection = data.active_selection;
@@ -206,11 +203,13 @@ pub fn update_node_tree_tabs_system(
                         let already_selected = data.selected_entities.contains(&new_selection);
                         if already_selected {
                             // Deselect
-                            deselect_event_writer.send(RequestDeselectEntityEvent(new_selection));
+                            commands.trigger(EntityEvent::Deselect {
+                                target: new_selection,
+                            });
                         } else {
                             // Add to selection
-                            select_event_writer.send(RequestSelectEntityEvent {
-                                entity: new_selection,
+                            commands.trigger(EntityEvent::Select {
+                                target: new_selection,
                                 additive: true,
                             });
                         }
@@ -219,8 +218,8 @@ pub fn update_node_tree_tabs_system(
                         data.active_selection = Some(new_selection);
                     } else {
                         // Normal selection
-                        select_event_writer.send(RequestSelectEntityEvent {
-                            entity: new_selection,
+                        commands.trigger(EntityEvent::Select {
+                            target: new_selection,
                             additive: false,
                         });
                         data.previous_active_selection = data.active_selection;

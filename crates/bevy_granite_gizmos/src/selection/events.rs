@@ -1,22 +1,13 @@
 use bevy::prelude::{Entity, Event};
 
 #[derive(Event)]
-pub struct RequestSelectEntityEvent {
-    pub entity: Entity,
-    pub additive: bool,
+pub enum EntityEvent {
+    Select { target: Entity, additive: bool },
+    SelectRange { range: Vec<Entity>, additive: bool },
+    Deselect { target: Entity },
+    DeselectRange { range: Vec<Entity> },
+    DeselectAll,
 }
-
-#[derive(Event)]
-pub struct RequestSelectEntityRangeEvent {
-    pub entities: Vec<Entity>,
-    pub additive: bool,
-}
-
-#[derive(Event)]
-pub struct RequestDeselectEntityEvent(pub Entity);
-
-#[derive(Event)]
-pub struct RequestDeselectAllEntitiesEvent;
 
 #[derive(Event)]
 pub struct RequestDuplicateEntityEvent {

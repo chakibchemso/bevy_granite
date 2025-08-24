@@ -139,18 +139,17 @@ pub mod prelude {
     pub use crate::{
         bevy_granite_core,
         bevy_granite_core::{
-            BridgeTag, MainCamera, RequestDespawnSerializableEntities, RequestDespawnBySource, RequestLoadEvent,
-            RequestReloadEvent, RequestSaveEvent, TreeHiddenEntity, UICamera,
+            BridgeTag, MainCamera, RequestDespawnBySource, RequestDespawnSerializableEntities,
+            RequestLoadEvent, RequestReloadEvent, RequestSaveEvent, TreeHiddenEntity, UICamera,
             WorldLoadSuccessEvent, WorldSaveSuccessEvent,
         },
-        bevy_granite_logging::{log, LogCategory, LogLevel, LogType},
+        bevy_granite_logging::{LogCategory, LogLevel, LogType, log},
         bevy_granite_macros::{granite_component, register_editor_components},
     };
 
     #[cfg(feature = "gizmos")]
     pub use crate::bevy_granite_gizmos::{
-        RequestDeselectAllEntitiesEvent, RequestDeselectEntityEvent,
-        RequestDuplicateAllSelectionEvent, RequestDuplicateEntityEvent, RequestSelectEntityEvent,
+        EntityEvent, RequestDuplicateAllSelectionEvent, RequestDuplicateEntityEvent,
     };
 
     #[cfg(feature = "editor")]

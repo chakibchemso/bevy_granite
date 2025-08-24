@@ -19,6 +19,7 @@ bevy_granite_logging = { path = "../bevy_granite_logging"}
 bevy_granite_macros = { path = "../bevy_granite_macros"}
 
 enum_dispatch = "0.3.13"
+bitflags = "*"
 
 
 [lib]

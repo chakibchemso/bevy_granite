@@ -1,6 +1,7 @@
 use bevy::asset::Handle;
 use bevy::ecs::hierarchy::ChildOf;
 use bevy::pbr::MeshMaterial3d;
+use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use bevy::picking::Pickable;
 use bevy::prelude::{AlphaMode, Meshable, Quat, Sphere};
 use bevy::prelude::{
@@ -8,22 +9,13 @@ use bevy::prelude::{
     ResMut, Resource, StandardMaterial, Transform, Vec3, Visibility, Without,
 };
 use bevy::render::mesh::Mesh3d;
-use bevy::{
-    pbr::{NotShadowCaster, NotShadowReceiver},
-    render::view::RenderLayers,
-};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
 
-use crate::gizmos::rotate::gizmo;
 use crate::gizmos::GizmoOf;
-use crate::{
-    gizmos::{GizmoMesh, GizmoParent},
-    input::GizmoAxis,
-    selection::manager::ParentTo,
-};
+use crate::{gizmos::GizmoMesh, input::GizmoAxis};
 
 #[derive(Component)]
 pub struct RotateGizmo;
@@ -96,11 +88,9 @@ pub fn spawn_rotate_gizmo(
                 GizmoOf(parent),
                 ChildOf(parent),
             ))
-            .insert(RenderLayers::layer(14)) // 14 is our UI/Gizmo layer.
             .insert(Name::new("RotateGizmo"))
             .insert(RotateGizmo)
             .insert(RotateGizmoParent)
-            .insert(GizmoParent)
             .id();
 
         // commands.entity(gizmo_entity).insert(ParentTo(parent));
@@ -200,7 +190,6 @@ fn build_free_sphere(
             NotShadowCaster,
             NotShadowReceiver,
             Name::new("Gizmo Rotate Sphere"),
-            RenderLayers::layer(14), // 14 is our UI/Gizmo layer.
             axis,
             RotateGizmo,
             GizmoMesh,
@@ -254,7 +243,6 @@ fn build_axis_ring<const C: char>(
             NotShadowCaster,
             NotShadowReceiver,
             Name::new("Gizmo Rotate Ring"),
-            RenderLayers::layer(14), // 14 is our UI/Gizmo layer.
             gizmo_axis,
             RotateGizmo,
             GizmoMesh,
