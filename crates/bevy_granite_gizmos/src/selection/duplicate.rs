@@ -214,7 +214,7 @@ fn create_new_entity(world: &mut World, new_parent: Option<Entity>) -> Entity {
     let new_entity = entity_builder.insert(HasRuntimeData).id();
 
     if let Some(parent) = new_parent {
-        entity_builder.set_parent(parent);
+        entity_builder.insert(ChildOf(parent));
     }
 
     new_entity
