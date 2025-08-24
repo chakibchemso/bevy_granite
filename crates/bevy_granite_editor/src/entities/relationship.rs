@@ -16,7 +16,7 @@ use bevy::{
     transform::commands::BuildChildrenTransformExt,
 };
 use bevy_granite_core::IconProxy;
-use bevy_granite_gizmos::{ActiveSelection, RequestDeselectAllEntitiesEvent, Selected};
+use bevy_granite_gizmos::{selection::events::EntityEvent, ActiveSelection, Selected};
 use bevy_granite_logging::*;
 
 pub fn parent_from_node_tree_system(
@@ -138,7 +138,6 @@ pub fn child_removal_system(
     active_selection: Query<Entity, (With<ActiveSelection>, With<ChildOf>)>,
     children_query: Query<&Children>,
     icon_proxy_query: Query<(), With<IconProxy>>,
-    mut deselect_writer: EventWriter<RequestDeselectAllEntitiesEvent>,
     mut commands: Commands,
 ) {
     for _request in child_request.read() {
@@ -164,7 +163,7 @@ pub fn child_removal_system(
 
         // Gizmo has weird issue where it stays in place when children are removed
         // so we deselect all entities to ensure it updates correctly
-        deselect_writer.send(RequestDeselectAllEntitiesEvent);
+        commands.trigger(EntityEvent::DeselectAll);
 
         log!(
             LogType::Editor,

@@ -17,13 +17,13 @@ use crate::{
     },
     UI_CONFIG,
 };
-use bevy::prelude::ResMut;
+use bevy::{ecs::system::Commands, prelude::ResMut};
 use bevy_egui::egui;
 use bevy_granite_core::{
     RequestDespawnBySource, RequestDespawnSerializableEntities, RequestLoadEvent, RequestSaveEvent,
     UserInput,
 };
-use bevy_granite_gizmos::RequestDeselectAllEntitiesEvent;
+use bevy_granite_gizmos::selection::events::EntityEvent;
 use native_dialog::FileDialog;
 
 pub fn top_bar_ui(
@@ -33,6 +33,7 @@ pub fn top_bar_ui(
     events: &mut EditorEvents,
     user_input: &UserInput,
     editor_state: &EditorState,
+    commands: &mut Commands,
 ) {
     let spacing = UI_CONFIG.spacing;
 
@@ -235,7 +236,7 @@ pub fn top_bar_ui(
             }
             ui.separator();
             if ui.button("Deselect All (U) ").clicked() {
-                events.deselect.send(RequestDeselectAllEntitiesEvent);
+                commands.trigger(EntityEvent::DeselectAll);
             }
             ui.separator();
         });

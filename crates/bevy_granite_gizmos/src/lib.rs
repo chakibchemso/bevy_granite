@@ -19,9 +19,8 @@ pub use gizmos::{
 };
 pub use input::{watch_gizmo_change, DragState, GizmoAxis};
 pub use selection::{
-    deselect_all_entities, ActiveSelection, RequestDeselectAllEntitiesEvent,
-    RequestDeselectEntityEvent, RequestDuplicateAllSelectionEvent, RequestDuplicateEntityEvent,
-    RequestSelectEntityEvent, RequestSelectEntityRangeEvent, Selected,
+    ActiveSelection, EntityEvent, RequestDuplicateAllSelectionEvent, RequestDuplicateEntityEvent,
+    Selected,
 };
 
 // Internal plugins

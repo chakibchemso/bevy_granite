@@ -1,6 +1,7 @@
 use bevy::asset::Handle;
 use bevy::ecs::hierarchy::ChildOf;
 use bevy::pbr::MeshMaterial3d;
+use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use bevy::picking::Pickable;
 use bevy::prelude::{AlphaMode, Meshable, Quat, Sphere};
 use bevy::prelude::{
@@ -8,22 +9,13 @@ use bevy::prelude::{
     ResMut, Resource, StandardMaterial, Transform, Vec3, Visibility, Without,
 };
 use bevy::render::mesh::Mesh3d;
-use bevy::{
-    pbr::{NotShadowCaster, NotShadowReceiver},
-    render::view::RenderLayers,
-};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
 
-use crate::gizmos::rotate::gizmo;
 use crate::gizmos::GizmoOf;
-use crate::{
-    gizmos::{GizmoChildren, GizmoMesh},
-    input::GizmoAxis,
-    selection::manager::ParentTo,
-};
+use crate::{gizmos::GizmoMesh, input::GizmoAxis};
 
 #[derive(Component)]
 pub struct RotateGizmo;

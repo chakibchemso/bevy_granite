@@ -76,4 +76,14 @@ impl GizmoAxis {
             GizmoAxis::None => Color::linear_rgba(0., 0., 0., 1.),
         }
     }
+
+    pub fn plane(self) -> (GizmoAxis, GizmoAxis) {
+        match self {
+            GizmoAxis::X => (GizmoAxis::Y, GizmoAxis::Z),
+            GizmoAxis::Y => (GizmoAxis::X, GizmoAxis::Z),
+            GizmoAxis::Z => (GizmoAxis::X, GizmoAxis::Y),
+            GizmoAxis::All => (GizmoAxis::All, GizmoAxis::All),
+            GizmoAxis::None => (GizmoAxis::None, GizmoAxis::None),
+        }
+    }
 }
