@@ -1,4 +1,4 @@
-
+use crate::editor_state::EditorState;
 use bevy::{
     gizmos::gizmos::Gizmos,
     math::Vec3,
@@ -6,7 +6,6 @@ use bevy::{
     transform::components::GlobalTransform,
 };
 use bevy_granite_core::UICamera;
-use crate::{editor_state::EditorState};
 
 fn draw_infinite_grid(
     mut gizmos: Gizmos,
@@ -61,7 +60,7 @@ pub fn update_grid_system(
     if !editor_state.active {
         return;
     }
-    if let Ok(camera_transform) = camera_query.get_single() {
+    if let Ok(camera_transform) = camera_query.single() {
         if editor_state.config.viewport.grid {
             let max_distance = editor_state.config.viewport.grid_distance;
             let color = editor_state.config.viewport.grid_color;

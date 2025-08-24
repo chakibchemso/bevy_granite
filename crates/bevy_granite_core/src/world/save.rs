@@ -66,7 +66,7 @@ pub fn save_request_system(
             path
         );
 
-        event_writer.send(CollectRuntimeDataEvent(spawn_source.clone()));
+        event_writer.write(CollectRuntimeDataEvent(spawn_source.clone()));
 
         // Part 1.
         // Gather all entities that are serializeable and contain IdentityData and Transform
@@ -74,12 +74,12 @@ pub fn save_request_system(
         let entities_data: Vec<(Entity, IdentityData, Transform, Option<Entity>)> = query
             .iter()
             .filter(|(_, _, _, _, source)| source.0 == spawn_source)
-            .map(|(entity, obj, transform, parent, _)| {
+            .map(|(entity, obj, transform, relation, _)| {
                 (
                     entity,
                     obj.clone(),
                     transform.cloned().unwrap_or_default(),
-                    parent.map(|p| p.get()),
+                    relation.map(|r| r.parent()),
                 )
             })
             .collect();
@@ -248,7 +248,7 @@ pub fn save_data_ready_system(
                 "Saved world: {:?}",
                 path
             );
-            saved_event_writer.send(WorldSaveSuccessEvent(path.display().to_string()));
+            saved_event_writer.write(WorldSaveSuccessEvent(path.display().to_string()));
         } else {
             log!(
                 LogType::Game,

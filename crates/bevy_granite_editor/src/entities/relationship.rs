@@ -65,7 +65,7 @@ pub fn parent_system(
     mut commands: Commands,
 ) {
     for _request in parent_request.read() {
-        if let Ok(active_entity) = active_selection.get_single() {
+        if let Ok(active_entity) = active_selection.single() {
             for selected_entity in selection.iter() {
                 commands
                     .entity(selected_entity)

@@ -1,5 +1,5 @@
-use crate::editor_state::EditorState;
 use super::DebugRenderer;
+use crate::editor_state::EditorState;
 use bevy::{
     ecs::{entity::Entity, system::Query},
     gizmos::gizmos::Gizmos,
@@ -7,8 +7,8 @@ use bevy::{
     prelude::{Res, Transform, With},
     transform::components::GlobalTransform,
 };
-use bevy_granite_gizmos::Selected;
 use bevy_granite_core::{GraniteTypes, IdentityData};
+use bevy_granite_gizmos::Selected;
 
 pub fn show_empty_origin_system(
     query: Query<(Entity, &GlobalTransform, &IdentityData)>,
@@ -25,7 +25,7 @@ pub fn show_empty_origin_system(
     }
     for (entity, global_transform, identity_data) in query.iter() {
         if config.debug_selected_only {
-            match active_query.get_single() {
+            match active_query.single() {
                 Ok(selected_entity) if selected_entity != entity => continue,
                 Err(_) => return,
                 _ => {}

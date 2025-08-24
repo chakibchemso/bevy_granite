@@ -89,7 +89,7 @@ pub fn update_node_tree_tabs_system(
     for (_, tab) in right_dock.dock_state.iter_all_tabs_mut() {
         if let SideTab::NodeTree { ref mut data, .. } = tab {
             let previous_selection = data.active_selection;
-            data.active_selection = active_selection.get_single().ok();
+            data.active_selection = active_selection.single().ok();
             data.selected_entities = all_selected.iter().collect();
 
             let (entities_changed, data_changed, hierarchy_changed) = if data.filtered_hierarchy {
@@ -251,7 +251,7 @@ pub fn update_node_tree_tabs_system(
                             LogCategory::UI,
                             "Remove parents event - dropped on empty space"
                         );
-                        remove_parents_event_writer.send(RequestRemoveParentsFromEntities {
+                        remove_parents_event_writer.write(RequestRemoveParentsFromEntities {
                             entities: dragged_entities,
                         });
                     } else if is_valid_drop(&dragged_entities, drop_target, &data.hierarchy) {
@@ -261,7 +261,7 @@ pub fn update_node_tree_tabs_system(
                             LogCategory::UI,
                             "Drag parent event"
                         );
-                        reparent_event_writer.send(RequestReparentEntityEvent {
+                        reparent_event_writer.write(RequestReparentEntityEvent {
                             entities: dragged_entities,
                             new_parent: drop_target,
                         });
@@ -343,9 +343,9 @@ fn detect_changes<'a>(
 
     // Also check if any parent relationships changed by comparing current vs stored hierarchy
     let hierarchy_changed = if !entities_changed {
-        hierarchy_query.into_iter().any(|(entity, _, parent, _)| {
+        hierarchy_query.into_iter().any(|(entity, _, relation, _)| {
             if let Some(entry) = data.hierarchy.iter().find(|e| e.entity == entity) {
-                let current_parent = parent.map(|p| p.get());
+                let current_parent = relation.map(|p| p.parent());
                 entry.parent != current_parent
             } else {
                 true // Entity not found in stored hierarchy
@@ -438,13 +438,13 @@ fn update_hierarchy_data<'a>(
 
     let mut hierarchy_entries: Vec<HierarchyEntry> = hierarchy_query
         .into_iter()
-        .map(|(entity, name, parent, identity)| HierarchyEntry {
+        .map(|(entity, name, relation, identity)| HierarchyEntry {
             entity,
             name: name.to_string(),
             entity_type: identity
                 .map(|id| id.class.type_abv())
                 .unwrap_or_else(|| "Unknown".to_string()),
-            parent: parent.map(|p| p.get()),
+            parent: relation.map(|r| r.parent()),
             is_expanded: existing_expanded.get(&entity).copied().unwrap_or(false),
         })
         .collect();

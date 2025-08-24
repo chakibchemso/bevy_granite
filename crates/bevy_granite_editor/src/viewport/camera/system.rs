@@ -88,7 +88,7 @@ pub fn camera_sync_toggle_system(
     for _event in toggle_event_writer.read() {
         // Store UI camera position when disabling sync (before UICamera takes control)
         if sync.ui_camera_has_control {
-            if let Ok(ui_camera_transform) = ui_camera_query.get_single() {
+            if let Ok(ui_camera_transform) = ui_camera_query.single() {
                 sync.ui_camera_old_position = Some(*ui_camera_transform);
             }
         }

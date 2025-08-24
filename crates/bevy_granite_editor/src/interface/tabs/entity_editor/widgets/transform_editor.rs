@@ -176,7 +176,7 @@ fn display_rotation_ui(
                         if ui.button("Reset").clicked() {
                             euler_vals[i] = 0.0;
                             ui_changed[i] = true;
-                            ui.close_menu();
+                            ui.close();
                         }
                     });
 
@@ -291,7 +291,7 @@ fn display_position_ui(ui: &mut egui::Ui, pos: &mut Vec3, changed: &mut bool, dr
                         pos_x = 0.0;
                         pos.x = pos_x;
                         *changed = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
@@ -306,7 +306,7 @@ fn display_position_ui(ui: &mut egui::Ui, pos: &mut Vec3, changed: &mut bool, dr
                         pos_y = 0.0;
                         pos.y = pos_y;
                         *changed = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
@@ -321,7 +321,7 @@ fn display_position_ui(ui: &mut egui::Ui, pos: &mut Vec3, changed: &mut bool, dr
                         pos_z = 0.0;
                         pos.z = pos_z;
                         *changed = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
@@ -376,7 +376,7 @@ fn display_scale_ui(ui: &mut egui::Ui, scale: &mut Vec3, changed: &mut bool, dra
                         scale_x = 1.0;
                         scale.x = scale_x;
                         *changed = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
@@ -391,7 +391,7 @@ fn display_scale_ui(ui: &mut egui::Ui, scale: &mut Vec3, changed: &mut bool, dra
                         scale_y = 1.0;
                         scale.y = scale_y;
                         *changed = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
@@ -406,7 +406,7 @@ fn display_scale_ui(ui: &mut egui::Ui, scale: &mut Vec3, changed: &mut bool, dra
                         scale_z = 1.0;
                         scale.z = scale_z;
                         *changed = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 

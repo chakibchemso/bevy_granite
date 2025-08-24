@@ -5,7 +5,7 @@ use crate::{
     },
     viewport::ViewportState,
 };
-use bevy_egui::egui;
+use bevy_egui::egui::{self, SliderClamping, UiBuilder};
 use bevy_granite_core::MaterialNameSource;
 
 // Helper trait for tracking changes
@@ -86,7 +86,7 @@ where
         }
 
         let mut slider = egui::Slider::new(value, range)
-            .clamp_to_range(true)
+            .clamping(SliderClamping::Always)
             .show_value(true)
             .max_decimals(decimals)
             .step_by(step.to_f64());
@@ -118,7 +118,7 @@ where
             label_response.on_hover_text(tooltip_text);
         }
 
-        egui::ComboBox::from_id_source(id)
+        egui::ComboBox::from_id_salt(id)
             .selected_text(format!("{:?}", selected))
             .width(120.0)
             .show_ui(&mut columns[1], |ui| {
@@ -426,7 +426,7 @@ fn build_selection_bounds_section(ui: &mut egui::Ui, viewport: &mut ViewportStat
                         );
                         columns[1].add(
                             egui::Slider::new(&mut percent, 0.0..=50.0)
-                                .clamp_to_range(true)
+                                .clamping(SliderClamping::Always)
                                 .show_value(true)
                                 .max_decimals(0)
                                 .suffix("%")
@@ -607,7 +607,7 @@ pub fn editor_settings_tab_ui(ui: &mut egui::Ui, data: &mut EditorSettingsTabDat
     let button_spacing = spacing;
     let reserved_bottom_space = button_height + button_spacing;
 
-    ui.allocate_ui_at_rect(full_rect, |ui| {
+    ui.scope_builder(UiBuilder::new().max_rect(full_rect), |ui| {
         let content_rect = egui::Rect::from_min_size(
             full_rect.min,
             egui::Vec2::new(
@@ -616,7 +616,7 @@ pub fn editor_settings_tab_ui(ui: &mut egui::Ui, data: &mut EditorSettingsTabDat
             ),
         );
 
-        ui.allocate_ui_at_rect(content_rect, |ui| {
+        ui.scope_builder(UiBuilder::new().max_rect(content_rect), |ui| {
             ui.vertical(|ui| {
                 // Tab bar
                 ui.horizontal(|ui| {
@@ -654,7 +654,7 @@ pub fn editor_settings_tab_ui(ui: &mut egui::Ui, data: &mut EditorSettingsTabDat
             egui::Vec2::new(full_rect.width(), button_height),
         );
 
-        ui.allocate_ui_at_rect(button_rect, |ui| {
+        ui.scope_builder(UiBuilder::new().max_rect(button_rect), |ui| {
             if ui
                 .add_sized(
                     [ui.available_width(), button_height],
