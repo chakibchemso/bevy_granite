@@ -333,7 +333,7 @@ pub fn handle_rotate_dragging(
                         Quat::IDENTITY
                     };
 
-                if let Ok((_, mut gizmo_transform, _)) = queries.p4().get_single_mut() {
+                if let Ok((_, mut gizmo_transform, _)) = queries.p4().single_mut() {
                     gizmo_transform.rotation =
                         drag_state.initial_gizmo_rotation * final_rotation.inverse();
                 }
