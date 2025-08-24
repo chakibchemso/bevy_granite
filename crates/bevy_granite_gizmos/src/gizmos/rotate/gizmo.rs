@@ -154,7 +154,7 @@ pub fn despawn_rotate_gizmo(
     query: &mut Query<(Entity, &RotateGizmo, &Children)>,
 ) {
     for (entity, _, _) in query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
         log!(
             LogType::Editor,
             LogLevel::Info,
