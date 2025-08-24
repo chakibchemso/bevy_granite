@@ -6,7 +6,7 @@ use super::{
 use crate::setup::is_editor_active;
 use bevy::{
     app::{App, Plugin, Update},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
 };
 
 pub struct AssetPlugin;

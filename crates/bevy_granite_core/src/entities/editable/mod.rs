@@ -1,6 +1,6 @@
 use crate::{
-    entities::EntitySaveReadyData, AvailableEditableMaterials, RequiredMaterialData,
-    RequiredMaterialDataMut, PromptData
+    entities::EntitySaveReadyData, AvailableEditableMaterials, PromptData, RequiredMaterialData,
+    RequiredMaterialDataMut,
 };
 use bevy::{
     asset::{AssetServer, Assets, Handle},
@@ -10,8 +10,8 @@ use bevy::{
     },
     ecs::{event::EventWriter, system::SystemParam},
     pbr::StandardMaterial,
-    prelude::Reflect,
-    render::{mesh::Mesh, texture::Image},
+    prelude::{Image, Reflect},
+    render::mesh::Mesh,
     transform::components::Transform,
 };
 use bevy_egui::egui;

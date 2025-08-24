@@ -10,7 +10,7 @@ use super::{
 use crate::is_gizmos_active;
 use bevy::{
     app::{App, Plugin, PostUpdate, Startup, Update},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::IntoScheduleConfigs,
 };
 
 pub struct GizmoPlugin;
@@ -24,11 +24,11 @@ impl Plugin for GizmoPlugin {
             .insert_resource(LastSelectedGizmo {
                 value: GizmoType::default(),
             })
-            .insert_resource(SelectedGizmo {
+            .insert_resource(SelectedGizmo(super::GizmoConfig {
                 value: GizmoType::Pointer,
                 speed_scale: 2.0,
                 distance_scale: 1.0,
-            })
+            }))
             .insert_resource(GizmoSnap {
                 transform_value: 0.,
                 rotate_value: 0.,
@@ -56,7 +56,6 @@ impl Plugin for GizmoPlugin {
                 Update,
                 (
                     // Starting, dragging and resetting of gizmos
-
                     // Transform gizmo
                     handle_transform_input,
                     handle_init_transform_drag.after(handle_transform_input),

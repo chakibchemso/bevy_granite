@@ -1,11 +1,10 @@
+use crate::interface::tabs::entity_editor::widgets::EntityRegisteredData;
 use bevy::{
-    pbr::StandardMaterial,
+    pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{Entity, Handle, Resource},
 };
-use bevy_granite_gizmos::DragState;
 use bevy_granite_core::{IdentityData, TransformData};
-use crate::interface::tabs::entity_editor::widgets::EntityRegisteredData;
-
+use bevy_granite_gizmos::DragState;
 
 #[derive(Resource, Default, Clone)]
 pub struct EntityUIDataCache {
@@ -17,7 +16,7 @@ pub struct EntityUIDataCache {
 #[derive(Clone, Default, PartialEq)]
 pub struct EntityData {
     pub entity: Option<Entity>,
-    pub material_handle: Option<Handle<StandardMaterial>>,
+    pub material_handle: Option<MeshMaterial3d<StandardMaterial>>,
     pub global_transform: TransformData,
     pub identity: IdentityData,
     pub gizmo_drag: DragState,

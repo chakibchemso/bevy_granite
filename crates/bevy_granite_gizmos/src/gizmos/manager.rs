@@ -68,11 +68,11 @@ pub fn gizmo_changed_watcher(
             LogCategory::Entity,
             "Gizmo changed"
         );
-        despawn_writer.send(DespawnGizmoEvent(last_selected_gizmo.value));
+        despawn_writer.write(DespawnGizmoEvent(last_selected_gizmo.value));
         last_selected_gizmo.value = selected_gizmo.value;
 
-        if active_selection.iter().len() > 0 {
-            spawn_writer.send(SpawnGizmoEvent(active_selection.single()));
+        if let Ok(active) = active_selection.single() {
+            spawn_writer.write(SpawnGizmoEvent(active));
         }
     }
 }

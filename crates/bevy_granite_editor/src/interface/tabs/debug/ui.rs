@@ -1,5 +1,5 @@
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{default, Entity};
-use bevy::utils::HashMap;
 use bevy_egui::egui;
 use bevy_granite_core::{AvailableEditableMaterials, IdentityData};
 

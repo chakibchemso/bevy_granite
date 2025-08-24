@@ -1,6 +1,7 @@
 use super::{ComponentEditor, EntitySaveReadyData, IdentityData, SceneData, SpawnSource};
 use crate::{
-    absolute_asset_to_rel, materials_from_folder_into_scene, shared::is_scene_version_compatible, AvailableEditableMaterials, GraniteType
+    absolute_asset_to_rel, materials_from_folder_into_scene, shared::is_scene_version_compatible,
+    AvailableEditableMaterials, GraniteType,
 };
 use bevy::{
     ecs::{entity::Entity, system::ResMut, world::World},
@@ -40,8 +41,12 @@ pub fn deserialize_entities(
     materials_from_folder_into_scene("materials", materials, available_materials, asset_server);
 
     // Gather file contents into a Vec<EntitySaveReadyData>
-    let deserialized_data =
-        gather_file_contents(asset_server, materials, available_materials, abs_path.clone());
+    let deserialized_data = gather_file_contents(
+        asset_server,
+        materials,
+        available_materials,
+        abs_path.clone(),
+    );
 
     // for id
     let mut uuid_to_entity_map: std::collections::HashMap<Uuid, Entity> =
@@ -92,7 +97,7 @@ pub fn deserialize_entities(
             let component_map = component_map.clone();
             let entity_copy = entity;
 
-            commands.add(move |world: &mut World| {
+            commands.queue(move |world: &mut World| {
                 // Get the current type registry from the world
                 let type_registry = world.resource::<AppTypeRegistry>().clone();
 
@@ -112,7 +117,6 @@ pub fn deserialize_entities(
     }
 
     // Apply relationships
-    use bevy::hierarchy::BuildChildren;
     for (child_entity, parent_guid) in parent_relationships {
         if let Some(&parent_entity) = uuid_to_entity_map.get(&parent_guid) {
             commands.entity(parent_entity).add_child(child_entity);

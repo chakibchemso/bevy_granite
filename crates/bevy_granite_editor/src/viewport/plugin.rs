@@ -1,5 +1,5 @@
 use super::camera::{
-    add_gizmo_camera, camera_frame_system, camera_sync_toggle_system, mouse_button_iter,
+    add_ui_camera, camera_frame_system, camera_sync_toggle_system, mouse_button_iter,
     sync_cameras_system, CameraSyncState, CameraTarget, InputState,
 };
 use crate::{
@@ -15,7 +15,7 @@ use crate::{
 };
 use bevy::{
     app::{PostUpdate, Startup},
-    ecs::schedule::IntoSystemConfigs,
+    ecs::schedule::{ApplyDeferred, IntoScheduleConfigs},
     gizmos::{
         config::{DefaultGizmoConfigGroup, GizmoConfig},
         AppGizmoBuilder,
@@ -60,7 +60,15 @@ impl Plugin for ViewportPlugin {
             // Schedule system
             //
             .add_systems(Startup, register_embedded_class_icons)
-            .add_systems(Startup, add_gizmo_camera)
+            .add_systems(
+                Startup,
+                (
+                    add_ui_camera,
+                    ApplyDeferred,
+                    bevy_egui::update_ui_size_and_scale_system,
+                )
+                    .chain(),
+            )
             .add_systems(
                 Update,
                 (
