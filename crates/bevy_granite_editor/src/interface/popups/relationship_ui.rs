@@ -35,16 +35,16 @@ pub fn relationship_ui(
                 ui.add_space(spacing);
 
                 if ui.button("Set as Parent").clicked() {
-                    events.parent.send(RequestNewParent);
+                    events.parent.write(RequestNewParent);
                     should_close = true;
                 }
 
                 if ui.button("Remove Parent").clicked() {
-                    events.remove_parent.send(RequestRemoveParents);
+                    events.remove_parent.write(RequestRemoveParents);
                     should_close = true;
                 }
                 if ui.button("Remove Children").clicked() {
-                    events.remove_children.send(RequestRemoveChildren);
+                    events.remove_children.write(RequestRemoveChildren);
                     should_close = true;
                 }
 

@@ -81,11 +81,11 @@ pub fn handle_rotate_input(
 
     // Setup drag
     if user_input.mouse_left.just_pressed && !drag_state.dragging & !user_input.mouse_over_egui {
-        init_drag_event.send(RotateInitDragEvent);
+        init_drag_event.write(RotateInitDragEvent);
     }
     // Dragging
     else if user_input.mouse_left.pressed && drag_state.dragging {
-        dragging_event.send(RotateDraggingEvent);
+        dragging_event.write(RotateDraggingEvent);
     }
     // Reset Drag
     else if user_input.mouse_left.just_released && drag_state.dragging {
@@ -217,7 +217,7 @@ pub fn handle_init_rotate_drag(
                     LogCategory::Input,
                     "Duplicate entity"
                 );
-                duplicate_event_writer.send(RequestDuplicateAllSelectionEvent);
+                duplicate_event_writer.write(RequestDuplicateAllSelectionEvent);
             }
         } else {
             return;

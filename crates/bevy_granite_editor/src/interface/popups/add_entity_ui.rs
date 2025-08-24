@@ -93,7 +93,7 @@ pub fn add_entity_ui(
                                 continue;
                             }
                             if ui.button(&entity_type.type_name()).clicked() {
-                                entity_add_request.send(UserRequestGraniteTypeViaPopup {
+                                entity_add_request.write(UserRequestGraniteTypeViaPopup {
                                     class: entity_type.clone(),
                                 });
                                 should_close = true;

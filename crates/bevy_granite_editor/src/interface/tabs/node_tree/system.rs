@@ -251,7 +251,7 @@ pub fn update_node_tree_tabs_system(
                             LogCategory::UI,
                             "Remove parents event - dropped on empty space"
                         );
-                        remove_parents_event_writer.send(RequestRemoveParentsFromEntities {
+                        remove_parents_event_writer.write(RequestRemoveParentsFromEntities {
                             entities: dragged_entities,
                         });
                     } else if is_valid_drop(&dragged_entities, drop_target, &data.hierarchy) {
@@ -261,7 +261,7 @@ pub fn update_node_tree_tabs_system(
                             LogCategory::UI,
                             "Drag parent event"
                         );
-                        reparent_event_writer.send(RequestReparentEntityEvent {
+                        reparent_event_writer.write(RequestReparentEntityEvent {
                             entities: dragged_entities,
                             new_parent: drop_target,
                         });

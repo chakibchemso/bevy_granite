@@ -70,7 +70,8 @@ pub fn update_entity_editor_tab_system(
                             }
 
                             // Send deletion event to notify other systems
-                            material_delete_writer.send(MaterialDeleteEvent { path: current_path });
+                            material_delete_writer
+                                .write(MaterialDeleteEvent { path: current_path });
                         }
                     }
                 }

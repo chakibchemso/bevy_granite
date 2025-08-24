@@ -51,7 +51,7 @@ pub fn top_bar_ui(
                     {
                         events
                             .save
-                            .send(RequestSaveEvent(path.display().to_string()));
+                            .write(RequestSaveEvent(path.display().to_string()));
                     }
                     ui.close();
                 }
@@ -60,7 +60,7 @@ pub fn top_bar_ui(
                     let loaded = &editor_state.loaded_sources;
                     if !loaded.is_empty() {
                         for (_index, source) in loaded.iter().enumerate() {
-                            events.save.send(RequestSaveEvent(source.to_string()));
+                            events.save.write(RequestSaveEvent(source.to_string()));
                         }
                     }
                     ui.close();
@@ -74,7 +74,7 @@ pub fn top_bar_ui(
                     {
                         events
                             .load
-                            .send(RequestLoadEvent(path.display().to_string()));
+                            .write(RequestLoadEvent(path.display().to_string()));
                     }
                     ui.close();
                 }
@@ -83,7 +83,7 @@ pub fn top_bar_ui(
 
                 ui.menu_button("Despawn", |ui| {
                     if ui.button("Despawn All Entities").clicked() {
-                        events.despawn_all.send(RequestDespawnSerializableEntities);
+                        events.despawn_all.write(RequestDespawnSerializableEntities);
                         ui.close();
                     }
 
@@ -103,7 +103,7 @@ pub fn top_bar_ui(
                             if ui.button(format!("{}", source)).clicked() {
                                 events
                                     .despawn_by_source
-                                    .send(RequestDespawnBySource(source));
+                                    .write(RequestDespawnBySource(source));
                                 ui.close();
                             }
                         }
@@ -115,14 +115,14 @@ pub fn top_bar_ui(
                 if ui.button("Open Default World").clicked() {
                     events
                         .load
-                        .send(RequestLoadEvent(editor_state.default_world.clone()));
+                        .write(RequestLoadEvent(editor_state.default_world.clone()));
                     ui.close();
                 }
 
                 if ui.button("Save Default World").clicked() {
                     events
                         .save
-                        .send(RequestSaveEvent(editor_state.default_world.clone()));
+                        .write(RequestSaveEvent(editor_state.default_world.clone()));
 
                     ui.close();
                 }
@@ -201,38 +201,38 @@ pub fn top_bar_ui(
         ui.horizontal(|ui| {
             ui.separator();
             if ui.button("Show Help (H) ").clicked() {
-                events.popup.send(PopupMenuRequestedEvent {
+                events.popup.write(PopupMenuRequestedEvent {
                     popup: PopupType::Help,
                     mouse_pos: user_input.mouse_pos,
                 });
             }
             ui.separator();
             if ui.button("Add Entity (Shft + A) ").clicked() {
-                events.popup.send(PopupMenuRequestedEvent {
+                events.popup.write(PopupMenuRequestedEvent {
                     popup: PopupType::AddEntity,
                     mouse_pos: user_input.mouse_pos,
                 });
             }
             ui.separator();
             if ui.button("Parents (Shft + P) ").clicked() {
-                events.popup.send(PopupMenuRequestedEvent {
+                events.popup.write(PopupMenuRequestedEvent {
                     popup: PopupType::AddRelationship,
                     mouse_pos: user_input.mouse_pos,
                 });
             }
             ui.separator();
             if ui.button("Toggle Editor (F1) ").clicked() {
-                events.toggle_editor.send(RequestEditorToggle);
+                events.toggle_editor.write(RequestEditorToggle);
             }
 
             ui.separator();
             if ui.button("Toggle Camera Control (F2) ").clicked() {
-                events.toggle_cam_sync.send(RequestToggleCameraSync);
+                events.toggle_cam_sync.write(RequestToggleCameraSync);
             }
 
             ui.separator();
             if ui.button("Frame Active (F) ").clicked() {
-                events.frame.send(RequestCameraEntityFrame);
+                events.frame.write(RequestCameraEntityFrame);
             }
             ui.separator();
             if ui.button("Deselect All (U) ").clicked() {
