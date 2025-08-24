@@ -306,8 +306,6 @@ fn copy_components_safe(
             }
         };
 
-        let cloned_component = reflected_component.clone_value();
-
         // Special handling for IdentityData to generate a new UUID
         if type_id == std::any::TypeId::of::<IdentityData>() {
             // Get source identity data first
@@ -321,8 +319,10 @@ fn copy_components_safe(
                 }
             }
         } else {
-            if let Ok(mut target_ref) = world.get_entity_mut(target_entity) {
-                reflect_component.insert(&mut target_ref, &*cloned_component, &registry_guard);
+            if let Ok(cloned_component) = reflected_component.reflect_clone() {
+                if let Ok(mut target_ref) = world.get_entity_mut(target_entity) {
+                    reflect_component.insert(&mut target_ref, &*cloned_component, &registry_guard);
+                }
             }
         }
     }
