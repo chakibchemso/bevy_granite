@@ -74,12 +74,12 @@ pub fn save_request_system(
         let entities_data: Vec<(Entity, IdentityData, Transform, Option<Entity>)> = query
             .iter()
             .filter(|(_, _, _, _, source)| source.0 == spawn_source)
-            .map(|(entity, obj, transform, parent, _)| {
+            .map(|(entity, obj, transform, relation, _)| {
                 (
                     entity,
                     obj.clone(),
                     transform.cloned().unwrap_or_default(),
-                    parent.map(|p| p.get()),
+                    relation.map(|r| r.parent()),
                 )
             })
             .collect();

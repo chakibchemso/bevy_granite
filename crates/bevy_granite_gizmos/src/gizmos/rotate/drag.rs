@@ -165,7 +165,7 @@ pub fn handle_init_rotate_drag(
         if let Ok((_gizmo_entity, gizmo_axis, gizmo_parent)) = queries.p1().get(raycast_target) {
             let gizmo_axis = *gizmo_axis;
 
-            let actual_parent = gizmo_parent.get();
+            let actual_parent = gizmo_parent.parent();
 
             hide_unselected_axes(gizmo_axis, &mut gizmo_visibility_query);
 
@@ -532,7 +532,7 @@ fn apply_independent_rotation(
         let parent_query = queries.p6();
         for &entity in all_selected_entities {
             if let Ok(parent) = parent_query.get(entity) {
-                parent_map.insert(entity, parent.get());
+                parent_map.insert(entity, parent.parent());
             }
         }
     }

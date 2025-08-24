@@ -343,9 +343,9 @@ fn detect_changes<'a>(
 
     // Also check if any parent relationships changed by comparing current vs stored hierarchy
     let hierarchy_changed = if !entities_changed {
-        hierarchy_query.into_iter().any(|(entity, _, parent, _)| {
+        hierarchy_query.into_iter().any(|(entity, _, relation, _)| {
             if let Some(entry) = data.hierarchy.iter().find(|e| e.entity == entity) {
-                let current_parent = parent.map(|p| p.get());
+                let current_parent = relation.map(|p| p.parent());
                 entry.parent != current_parent
             } else {
                 true // Entity not found in stored hierarchy
@@ -438,13 +438,13 @@ fn update_hierarchy_data<'a>(
 
     let mut hierarchy_entries: Vec<HierarchyEntry> = hierarchy_query
         .into_iter()
-        .map(|(entity, name, parent, identity)| HierarchyEntry {
+        .map(|(entity, name, relation, identity)| HierarchyEntry {
             entity,
             name: name.to_string(),
             entity_type: identity
                 .map(|id| id.class.type_abv())
                 .unwrap_or_else(|| "Unknown".to_string()),
-            parent: parent.map(|p| p.get()),
+            parent: relation.map(|r| r.parent()),
             is_expanded: existing_expanded.get(&entity).copied().unwrap_or(false),
         })
         .collect();
