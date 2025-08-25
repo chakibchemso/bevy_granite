@@ -43,8 +43,8 @@ pub trait GraniteType {
     /// If we require user input, this is the config to send to the dialog browser
     /// Base path is first string - relative!
     /// Second list of vectors is file extensions to show in popup
-    fn get_prompt_config(&self) -> (String, Vec<String>) {
-        ("".to_string(), vec!["*".to_string()])
+    fn get_prompt_config(&self) -> (String, Vec<&'static str>) {
+        ("".to_string(), vec!["*"])
     }
 
     /// Provide the embedded icon bytes - override this if your type has an icon

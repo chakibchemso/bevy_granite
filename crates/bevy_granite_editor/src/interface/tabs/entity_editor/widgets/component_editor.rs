@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::interface::{
     shared::widgets::combobox::component_selector_combo, tabs::EntityEditorTabData,
 };
@@ -112,21 +114,21 @@ fn display_add_registered_component(
     ui: &mut egui::Ui,
     component_changed: &mut bool,
     registered_add_request: &mut Option<String>,
-    registered_type_names: Vec<String>,
+    registered_type_names: Vec<Cow<'static, str>>,
     existing_components: &[ReflectedComponent],
     search_filter: &mut String,
 ) {
     let large_spacing = crate::UI_CONFIG.large_spacing;
     // Create a set of existing component type names for fast lookup
-    let existing_type_names: std::collections::HashSet<&String> = existing_components
+    let existing_type_names: std::collections::HashSet<Cow<'static, str>> = existing_components
         .iter()
-        .map(|comp| &comp.type_name)
+        .map(|comp| comp.type_name.clone())
         .collect();
 
     // Filter out components that are already on the entity
     let available_components: Vec<_> = registered_type_names
         .iter()
-        .filter(|name| !existing_type_names.contains(name))
+        .filter(|name| !existing_type_names.contains(name.as_ref()))
         .cloned()
         .collect();
 

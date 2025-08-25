@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use bevy::{
     ecs::component::Component,
     ecs::resource::Resource,
@@ -29,7 +31,23 @@ pub struct MainCamera;
 /// String is relative path from /assets
 #[derive(Reflect, Serialize, Deserialize, Debug, Clone, Component, Default, PartialEq)]
 #[reflect(Component, Serialize, Deserialize, Default, FromReflect)]
-pub struct SpawnSource(pub String);
+pub struct SpawnSource(Cow<'static, str>);
+impl SpawnSource {
+    pub fn new(path: impl Into<Cow<'static, str>>) -> Self {
+        Self(path.into())
+    }
+
+    pub fn str_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl core::ops::Deref for SpawnSource {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        self.0.as_ref()
+    }
+}
 
 /// Camera for UI Editor Elements
 #[derive(Reflect, Serialize, Deserialize, Debug, Clone, Component, Default, PartialEq)]

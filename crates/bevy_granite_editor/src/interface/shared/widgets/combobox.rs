@@ -5,7 +5,10 @@ use bevy_granite_logging::{
     log,
 };
 use egui::{Align2, Rect, Response, Shape, Stroke, Ui, Vec2};
-use std::collections::{HashMap, HashSet};
+use std::{
+    borrow::Cow,
+    collections::{HashMap, HashSet},
+};
 
 // Generic trait for items that can be displayed in selectors
 trait SelectableItem {
@@ -15,6 +18,28 @@ trait SelectableItem {
 }
 
 impl SelectableItem for String {
+    fn display_name(&self) -> &str {
+        if let Some(last_separator) = self.rfind("::") {
+            &self[last_separator + 2..]
+        } else {
+            self
+        }
+    }
+
+    fn search_text(&self) -> String {
+        self.to_lowercase()
+    }
+
+    fn group_key(&self) -> String {
+        if let Some(last_separator) = self.rfind("::") {
+            self[..last_separator].to_string()
+        } else {
+            "Root".to_string()
+        }
+    }
+}
+
+impl SelectableItem for Cow<'static, str> {
     fn display_name(&self) -> &str {
         if let Some(last_separator) = self.rfind("::") {
             &self[last_separator + 2..]
@@ -325,21 +350,21 @@ fn handle_popup_button(
 pub fn component_selector_combo(
     ui: &mut egui::Ui,
     search_filter: &mut String,
-    registered_type_names: Vec<String>,
+    registered_type_names: Vec<Cow<'static, str>>,
     existing_components: &[ReflectedComponent],
     component_changed: &mut bool,
     registered_add_request: &mut Option<String>,
 ) -> bool {
     let popup_id = egui::Id::new("component_selector_popup");
 
-    let existing_type_names: HashSet<&String> = existing_components
+    let existing_type_names: HashSet<Cow<'static, str>> = existing_components
         .iter()
-        .map(|comp| &comp.type_name)
+        .map(|comp| comp.type_name.clone())
         .collect();
 
     let available_components: Vec<_> = registered_type_names
         .iter()
-        .filter(|name| !existing_type_names.contains(name))
+        .filter(|name| !existing_type_names.contains(name.as_ref()))
         .cloned()
         .collect();
 
@@ -360,13 +385,13 @@ pub fn component_selector_combo(
         "component",
         "All registered components are already on this entity",
         "No components match your search",
-        |ui, component_name: &String| {
+        |ui, component_name: &Cow<'static, str>| {
             if ui
                 .selectable_label(false, component_name.display_name())
                 .clicked()
             {
                 *component_changed = true;
-                *registered_add_request = Some((*component_name).clone());
+                *registered_add_request = Some(component_name.to_string());
                 Popup::close_id(ui.ctx(), popup_id);
                 return true;
             }

@@ -64,8 +64,8 @@ pub fn update_active_world_system(
 
     for WorldLoadSuccessEvent(path) in open_success_reader.read() {
         let rel_path = absolute_asset_to_rel(path.to_string());
-        editor_state.current_file = Some(rel_path.clone());
-        editor_state.loaded_sources.insert(rel_path.clone());
+        editor_state.current_file = Some(rel_path.to_string());
+        editor_state.loaded_sources.insert(rel_path.to_string());
         log!(
             LogType::Editor,
             LogLevel::Info,
@@ -78,7 +78,7 @@ pub fn update_active_world_system(
 
     for WorldSaveSuccessEvent(path) in world_save_success_reader.read() {
         let rel_path = absolute_asset_to_rel(path.to_string());
-        editor_state.loaded_sources.insert(rel_path.clone());
+        editor_state.loaded_sources.insert(rel_path.to_string());
         log!(
             LogType::Editor,
             LogLevel::Info,
@@ -91,8 +91,8 @@ pub fn update_active_world_system(
 
     for SetActiveWorld(path) in set_active_world_reader.read() {
         let rel_path = absolute_asset_to_rel(path.to_string());
-        editor_state.current_file = Some(rel_path.clone());
-        editor_state.loaded_sources.insert(rel_path.clone());
+        editor_state.current_file = Some(rel_path.to_string());
+        editor_state.loaded_sources.insert(rel_path.to_string());
         log!(
             LogType::Editor,
             LogLevel::Info,
