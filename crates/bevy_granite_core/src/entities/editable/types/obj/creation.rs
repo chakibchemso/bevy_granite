@@ -94,20 +94,20 @@ impl OBJ {
     ) -> Entity {
         // Prompt info has the desired disk path to load mesh from, and prompt import settings
         let prompt_info = maybe_prompt_data.unwrap_or_default();
-        let file_path = prompt_info.file.unwrap_or(self.mesh_path.clone());
+        let file_path = prompt_info.file.unwrap_or(self.mesh_path.to_string());
 
         // Ensure we have rel and abs
-        let rel_path = absolute_asset_to_rel(file_path.clone());
-        let abs_path = rel_asset_to_absolute(rel_path.clone());
+        let rel_path = absolute_asset_to_rel(file_path);
+        let abs_path = rel_asset_to_absolute(&rel_path);
 
         // Extract name from OBJ file
-        let entity_name = match Self::extract_first_object_name(&abs_path) {
+        let entity_name = match Self::extract_first_object_name(abs_path.as_ref()) {
             Ok(name) => name,
             Err(_) => "Imported Object".to_string(),
         };
 
         // Update internal state
-        self.mesh_path = rel_path.clone();
+        self.mesh_path = rel_path;
 
         let identity = IdentityData {
             name: entity_name,
@@ -157,7 +157,7 @@ impl OBJ {
             create_material_from,
         );
 
-        let mesh_handle: Handle<Mesh> = asset_server.load(&self.mesh_path);
+        let mesh_handle: Handle<Mesh> = asset_server.load(self.mesh_path.as_ref());
 
         commands
             .spawn(Self::get_bundle(
@@ -259,7 +259,7 @@ impl OBJ {
         let engine_fallback = String::from("materials/internal/default.mat");
         if create_material {
             material_path = {
-                let abs_path = rel_asset_to_absolute(self.mesh_path.clone());
+                let abs_path = rel_asset_to_absolute(&self.mesh_path);
                 match create_material_from {
                     MaterialNameSource::SaveData => {
                         // Save data should contain the material path, if it doesnt, dont return a path
@@ -282,7 +282,7 @@ impl OBJ {
                     }
                     MaterialNameSource::DefaultMaterial => engine_fallback,
                     MaterialNameSource::FileContents => {
-                        match OBJ::extract_first_usemtl_name(abs_path) {
+                        match OBJ::extract_first_usemtl_name(abs_path.as_ref()) {
                             Ok(material_path) => {
                                 format!("materials/{}.mat", material_path.to_lowercase())
                                 // Extracted a usemtl name from the specified obj file

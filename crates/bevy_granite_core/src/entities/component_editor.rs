@@ -3,7 +3,7 @@ use bevy::{
     reflect::{FromType, ReflectDeserialize, TypeRegistration},
 };
 use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
-use std::{any::Any, collections::HashMap};
+use std::{any::Any, borrow::Cow, collections::HashMap};
 
 // All structs defined by #[granite_component]
 // get this tag so we can easily filter in UI
@@ -32,7 +32,7 @@ pub fn is_exposed_bevy_component(registration: &TypeRegistration) -> bool {
 
 #[derive(Debug)]
 pub struct ReflectedComponent {
-    pub type_name: String,
+    pub type_name: Cow<'static, str>,
     pub reflected_data: Box<dyn PartialReflect>,
     pub type_registration: TypeRegistration,
 }
@@ -112,7 +112,7 @@ impl ComponentEditor {
                         if let Some(reflected) = reflect_component.reflect(entity_ref) {
                             if let Ok(clone) = reflected.reflect_clone() {
                                 components.push(ReflectedComponent {
-                                    type_name: type_name.to_string(),
+                                    type_name: type_name.into(),
                                     reflected_data: clone,
                                     type_registration: registration.clone(),
                                 });

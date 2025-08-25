@@ -4,8 +4,7 @@ use bevy_granite_logging::{
 };
 use native_dialog::FileDialog;
 
-pub fn asset_file_browser(path: String, filter: Vec<String>) -> Option<String> {
-    let filter_refs: Vec<&str> = filter.iter().map(|s| s.as_str()).collect();
+pub fn asset_file_browser(path: String, filter: Vec<&str>) -> Option<String> {
     let current_dir = std::env::current_dir().unwrap();
     let assets_dir = current_dir.join("assets");
     let location = assets_dir.join(&path);
@@ -43,7 +42,7 @@ pub fn asset_file_browser(path: String, filter: Vec<String>) -> Option<String> {
 
     if let Some(selected_path) = FileDialog::new()
         .set_location(&location)
-        .add_filter("Files", &filter_refs)
+        .add_filter("Files", &filter)
         .show_open_single_file()
         .unwrap()
     {
@@ -63,8 +62,7 @@ pub fn asset_file_browser(path: String, filter: Vec<String>) -> Option<String> {
     }
 }
 
-pub fn asset_file_browser_multiple(path: String, filter: Vec<String>) -> Option<Vec<String>> {
-    let filter_refs: Vec<&str> = filter.iter().map(|s| s.as_str()).collect();
+pub fn asset_file_browser_multiple(path: String, filter: Vec<&str>) -> Option<Vec<String>> {
     let current_dir = std::env::current_dir().unwrap();
     let assets_dir = current_dir.join("assets");
     let location = assets_dir.join(&path);
@@ -102,7 +100,7 @@ pub fn asset_file_browser_multiple(path: String, filter: Vec<String>) -> Option<
 
     let selected_paths = FileDialog::new()
         .set_location(&location)
-        .add_filter("Files", &filter_refs)
+        .add_filter("Files", &filter)
         .show_open_multiple_file()
         .unwrap();
 
@@ -111,7 +109,7 @@ pub fn asset_file_browser_multiple(path: String, filter: Vec<String>) -> Option<
     }
 
     let mut valid_paths = Vec::new();
-    
+
     for path in selected_paths {
         if path.starts_with(&assets_dir) {
             valid_paths.push(path.to_string_lossy().to_string());
@@ -125,7 +123,7 @@ pub fn asset_file_browser_multiple(path: String, filter: Vec<String>) -> Option<
             );
         }
     }
-    
+
     if valid_paths.is_empty() {
         None
     } else {

@@ -129,7 +129,7 @@ pub fn process_entity_spawn_queue_system(
         // Tag entity with spawn source
         commands
             .entity(entity)
-            .insert(SpawnSource(pending.source.clone()));
+            .insert(SpawnSource::new(pending.source.clone()));
 
         let additive = pending.batch_size > 1;
         let remaining = spawn_queue.pending.len();

@@ -893,8 +893,8 @@ impl EditableMaterial {
 
         // Try to delete the file from disk
         if !self.path.is_empty() {
-            let abs_path = rel_asset_to_absolute(self.path.clone());
-            let file_path = abs_path;
+            let abs_path = rel_asset_to_absolute(&self.path);
+            let file_path = abs_path.to_string();
 
             if std::fs::metadata(&file_path).is_ok() {
                 match std::fs::remove_file(&file_path) {

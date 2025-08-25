@@ -37,7 +37,7 @@ pub fn update_debug_tab_ui_system(
                     let spawned_from = spawn_source_query
                         .get(active_entity)
                         .ok()
-                        .map(|s| s.0.clone());
+                        .map(|s| s.to_string());
 
                     ActiveObjectDetails {
                         entity: Some(active_entity),
