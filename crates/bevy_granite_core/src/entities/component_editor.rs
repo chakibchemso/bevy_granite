@@ -60,8 +60,6 @@ impl PartialEq for ReflectedComponent {
     }
 }
 
-///
-
 #[derive(Resource, Clone, Default)]
 pub struct ComponentEditor {
     pub selected_entity: Option<Entity>,

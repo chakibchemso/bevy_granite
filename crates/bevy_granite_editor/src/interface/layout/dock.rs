@@ -81,7 +81,7 @@ pub fn dock_ui_system(
             });
         });
 
-    let side_panel_position = editor_state.config.dock.side_panel_position.clone();
+    let side_panel_position = editor_state.config.dock.side_panel_position;
     match side_panel_position {
         SidePanelPosition::Left => {
             egui::SidePanel::left("left_dock_panel")

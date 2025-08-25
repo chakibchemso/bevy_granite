@@ -61,7 +61,7 @@ pub fn deserialize_entities(
             materials,
             available_materials,
             &mut meshes,
-            &save_data,
+            save_data,
         );
 
         // Map the stored GUID to the new entity

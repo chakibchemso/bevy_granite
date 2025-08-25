@@ -1,7 +1,7 @@
 use super::editor_gizmos_ui;
 use crate::is_gizmos_active;
 use bevy::{
-    app::{App, Plugin, Update},
+    app::{App, Plugin},
     ecs::schedule::IntoScheduleConfigs,
 };
 use bevy_egui::EguiPrimaryContextPass;

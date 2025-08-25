@@ -4,7 +4,7 @@ use bevy::{
     color::Color,
     math::Vec3,
     pbr::{MeshMaterial3d, StandardMaterial},
-    prelude::{Assets, Entity, Handle, Query, Res, ResMut, Transform, With, Without},
+    prelude::{Assets, Entity, Query, Res, ResMut, Transform, With, Without},
     render::view::Visibility,
     transform::components::GlobalTransform,
 };

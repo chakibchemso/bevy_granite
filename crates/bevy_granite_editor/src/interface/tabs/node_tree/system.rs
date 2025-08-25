@@ -5,7 +5,7 @@ use bevy::ecs::query::Has;
 use bevy::ecs::system::Commands;
 use bevy::{
     ecs::query::{Changed, Or},
-    prelude::{ChildOf, Entity, Event, EventWriter, Name, Query, ResMut, With, Without},
+    prelude::{ChildOf, Entity, Event, EventWriter, Name, Query, ResMut, With},
 };
 use bevy_granite_core::{GraniteType, IdentityData, TreeHiddenEntity};
 use bevy_granite_gizmos::selection::events::EntityEvent;
@@ -329,11 +329,7 @@ fn detect_changes<'a>(
 ) -> (bool, bool, bool) {
     use std::collections::HashSet;
 
-    let current_entities: HashSet<Entity> = hierarchy_query
-        .clone()
-        .into_iter()
-        .map(|(e, _, _, _)| e)
-        .collect();
+    let current_entities: HashSet<Entity> = hierarchy_query.clone().map(|(e, _, _, _)| e).collect();
     let existing_entities: HashSet<Entity> =
         data.hierarchy.iter().map(|entry| entry.entity).collect();
 

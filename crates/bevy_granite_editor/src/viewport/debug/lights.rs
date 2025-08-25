@@ -4,7 +4,6 @@ use bevy::{
     color::Color,
     ecs::{entity::Entity, system::Query},
     gizmos::gizmos::Gizmos,
-    math::Dir3,
     pbr::{DirectionalLight, PointLight},
     prelude::{Res, With},
     transform::components::GlobalTransform,

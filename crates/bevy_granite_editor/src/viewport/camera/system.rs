@@ -5,7 +5,7 @@ use crate::{
     viewport::camera::{handle_movement, handle_zoom, rotate_camera_towards},
 };
 use bevy::{
-    asset::{Assets, Handle},
+    asset::Assets,
     ecs::entity::Entity,
     input::mouse::{MouseMotion, MouseWheel},
     prelude::{

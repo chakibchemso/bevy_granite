@@ -156,7 +156,7 @@ pub fn drag_transform_gizmo(
             target_transform.translation.y = snap_gizmo(hit.y, gizmo_snap.transform_value);
         }
         (GizmoAxis::All, _) => {
-            let Some(click_distance) = click_ray.intersect_plane(
+            let Some(_click_distance) = click_ray.intersect_plane(
                 target_transform.translation,
                 bevy::math::primitives::InfinitePlane3d::new(camera_transform.forward()),
             ) else {

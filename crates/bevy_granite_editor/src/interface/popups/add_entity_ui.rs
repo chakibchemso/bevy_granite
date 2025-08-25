@@ -29,7 +29,7 @@ pub fn add_entity_ui(
         // call this to ensure the window is not transparent when theme transparency is selected
         .frame(make_frame_solid_via_context(
             egui::Frame::window(&contexts.ctx_mut().expect("Egui context to exist").style()),
-            &contexts.ctx_mut().expect("Egui context to exist"),
+            contexts.ctx_mut().expect("Egui context to exist"),
         ))
         .show(contexts.ctx_mut().expect("Egui context to exist"), |ui| {
             ui.horizontal(|ui| {
@@ -92,7 +92,7 @@ pub fn add_entity_ui(
                             if let GraniteTypes::Unknown(_) = *entity_type {
                                 continue;
                             }
-                            if ui.button(&entity_type.type_name()).clicked() {
+                            if ui.button(entity_type.type_name()).clicked() {
                                 entity_add_request.write(UserRequestGraniteTypeViaPopup {
                                     class: entity_type.clone(),
                                 });
