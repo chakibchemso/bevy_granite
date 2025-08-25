@@ -59,7 +59,7 @@ pub fn top_bar_ui(
                 if ui.button("Save (Ctrl + S)").clicked() {
                     let loaded = &editor_state.loaded_sources;
                     if !loaded.is_empty() {
-                        for (_index, source) in loaded.iter().enumerate() {
+                        for source in loaded.iter() {
                             events.save.write(RequestSaveEvent(source.to_string()));
                         }
                     }

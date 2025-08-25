@@ -3,7 +3,6 @@ use crate::interface::{
     tabs::entity_editor::EntityRegisteredData,
 };
 use bevy::{
-    asset::Handle,
     pbr::{MeshMaterial3d, StandardMaterial},
     prelude::{Entity, Name, Transform, World},
     transform::components::GlobalTransform,

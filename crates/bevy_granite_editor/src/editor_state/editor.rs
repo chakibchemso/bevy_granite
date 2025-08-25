@@ -19,11 +19,8 @@ use bevy_granite_logging::{
 };
 
 use crate::interface::RequestEditorToggle;
-use bevy::prelude::{Children, Commands, Entity, Query, With};
-use bevy_granite_gizmos::{
-    despawn_rotate_gizmo, selection::events::EntityEvent, ActiveSelection, GizmoVisibilityState,
-    RotateGizmo, Selected, TransformGizmo,
-};
+use bevy::prelude::Commands;
+use bevy_granite_gizmos::{selection::events::EntityEvent, GizmoVisibilityState};
 
 // editor.rs
 // This has functions related to saving the editor settings
@@ -112,8 +109,6 @@ pub fn update_editor_vis_system(
     mut editor_state: ResMut<EditorState>,
     mut gizmo_state: ResMut<GizmoVisibilityState>,
     mut commands: Commands,
-    selection: Query<Entity, With<Selected>>,
-    active_selection: Query<Entity, With<ActiveSelection>>,
 ) {
     for RequestEditorToggle in toggle_reader.read() {
         // have to do it manually as watchers wont run when not active

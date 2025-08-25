@@ -2,10 +2,9 @@ use crate::{editor_state::EditorState, interface::UserRequestGraniteTypeViaPopup
 use bevy::{
     asset::{AssetServer, Assets},
     ecs::{
-        event::{EventReader, EventWriter},
+        event::EventReader,
         system::{Commands, Res, ResMut},
     },
-    math::Vec3,
     pbr::StandardMaterial,
     prelude::Resource,
     render::mesh::Mesh,
@@ -51,8 +50,7 @@ pub fn new_entity_via_popup_system(
             class
         );
 
-        let mut transform = Transform::default();
-        transform.translation = Vec3::ZERO;
+        let transform = Transform::default();
 
         let source = editor_state
             .current_file

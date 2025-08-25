@@ -21,7 +21,7 @@ use super::{
 use crate::{interface::RequestRemoveParentsFromEntities, setup::is_editor_active};
 use bevy::{
     ecs::schedule::IntoScheduleConfigs,
-    prelude::{App, Handle, Mesh, Plugin, StandardMaterial, Update},
+    prelude::{App, Handle, Mesh, Plugin, StandardMaterial},
 };
 use bevy_egui::EguiPrimaryContextPass;
 

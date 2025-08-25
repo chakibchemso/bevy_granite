@@ -26,7 +26,7 @@ pub fn relationship_ui(
         // call this to ensure the window is not transparent when theme transparency is selected
         .frame(make_frame_solid_via_context(
             egui::Frame::window(&contexts.ctx_mut().expect("Egui context to exist").style()),
-            &contexts.ctx_mut().expect("Egui context to exist"),
+            contexts.ctx_mut().expect("Egui context to exist"),
         ))
         .show(contexts.ctx_mut().expect("Egui context to exist"), |ui| {
             ui.vertical(|ui| {

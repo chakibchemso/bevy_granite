@@ -156,12 +156,12 @@ pub use lifecycle::{
 pub use plugin::EntityPlugin;
 pub use serialize::{serialize_entities, EntitySaveReadyData, SceneData, SceneMetadata};
 
-/// A marker component that an entity should be ignored by the editor
-/// This will be more powerful then not having Bridge
-/// As this is explicitly added to an entity
 // Im adding this so you cant select the editor camera
 // and to stop a crash because you can select a gizmo that then despawns its self
 bitflags::bitflags! {
+    /// A marker component that an entity should be ignored by the editor
+    /// This will be more powerful then not having Bridge
+    /// As this is explicitly added to an entity
     #[derive(bevy::ecs::component::Component, Default)]
     pub struct EditorIgnore: usize {
         const GIZMO = 1;

@@ -407,7 +407,6 @@ pub fn debug_handle_rotate_dragging<const AXIS: char>(
 ) {
     let gizmo_distance_scale = selected.speed_scale;
     let free_rotate_speed = 0.3 * gizmo_distance_scale;
-    let locked_rotate_speed = 1.15 * gizmo_distance_scale;
 
     let gizmo_axis = match AXIS {
         'X' | 'x' => GizmoAxis::X,

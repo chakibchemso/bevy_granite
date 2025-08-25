@@ -50,7 +50,7 @@ impl SelectableItem for EditableMaterial {
     }
 
     fn group_key(&self) -> String {
-        if self.path == "" || self.path == "None" {
+        if self.path.is_empty() || self.path == "None" {
             "materials/internal".to_string()
         } else if let Some(last_separator) = self.path.rfind('/') {
             self.path[..last_separator].to_string()
@@ -156,7 +156,7 @@ fn render_popup_content<T: SelectableItem>(
     for item in filtered_items.iter() {
         grouped_items
             .entry(item.group_key())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(*item);
     }
 

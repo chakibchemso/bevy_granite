@@ -105,9 +105,9 @@ impl PopupHelpText {
     }
 }
 
-pub static UI_CONFIG: LazyLock<UiConfig> = LazyLock::new(|| UiConfig::from_toml());
-pub static HELP_CONFIG: LazyLock<PopupHelpText> = LazyLock::new(|| PopupHelpText::from_toml());
-pub static INPUT_CONFIG: LazyLock<InputConfig> = LazyLock::new(|| InputConfig::from_toml());
+pub static UI_CONFIG: LazyLock<UiConfig> = LazyLock::new(UiConfig::from_toml);
+pub static HELP_CONFIG: LazyLock<PopupHelpText> = LazyLock::new(PopupHelpText::from_toml);
+pub static INPUT_CONFIG: LazyLock<InputConfig> = LazyLock::new(InputConfig::from_toml);
 
 pub static INTERFACE_CONFIG: LazyLock<toml::Value> = LazyLock::new(|| {
     toml::from_str(INTERFACE_CONFIG_TOML).expect("Failed to parse config.toml configuration")

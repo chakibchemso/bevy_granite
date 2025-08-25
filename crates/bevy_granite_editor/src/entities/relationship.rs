@@ -8,7 +8,7 @@ use crate::interface::{
 use bevy::{
     ecs::{
         entity::Entity,
-        event::{EventReader, EventWriter},
+        event::EventReader,
         query::{With, Without},
         system::{Commands, Query},
     },

@@ -6,7 +6,7 @@ use bevy::{
     ecs::{entity::Entity, system::Query},
     gizmos::gizmos::Gizmos,
     math::Vec3,
-    prelude::{Assets, Handle, Mesh, Res, With},
+    prelude::{Assets, Mesh, Res, With},
     render::mesh::Mesh3d,
     transform::components::GlobalTransform,
 };

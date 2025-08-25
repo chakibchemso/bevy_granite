@@ -1,4 +1,4 @@
-use super::{IconBundle, IconEntity};
+use super::IconEntity;
 use crate::{editor_state::EditorState, viewport::config::VisualizationConfig};
 use bevy::{
     pbr::{MeshMaterial3d, NotShadowCaster, NotShadowReceiver, StandardMaterial},
@@ -43,13 +43,13 @@ pub fn spawn_icon_entities_system(
             let handle = class.get_icon_handle();
             let name = class.type_name() + "_icon";
 
-            if handle.is_some() {
+            if let Some(handle) = handle {
                 spawn_icon_for_entity(
                     &mut commands,
                     &mut meshes,
                     &mut materials,
                     entity,
-                    handle.unwrap(),
+                    handle,
                     name,
                     config,
                 );
@@ -74,7 +74,7 @@ fn spawn_icon_for_entity(
     // Create material with the embedded icon texture
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(texture_handle),
-        base_color: bevy::color::Color::srgb_from_array(config.icon_color).into(),
+        base_color: bevy::color::Color::srgb_from_array(config.icon_color),
         unlit: true,
         alpha_mode: AlphaMode::Mask(0.5), // Use alpha cutout for icons
         cull_mode: None,

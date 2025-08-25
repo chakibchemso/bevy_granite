@@ -1,6 +1,4 @@
-use bevy::prelude::{
-    AssetServer, Assets, Commands, Component, Entity, Handle, Query, Res, ResMut, With,
-};
+use bevy::prelude::{AssetServer, Assets, Commands, Component, Entity, Query, Res, ResMut, With};
 use bevy::render::mesh::*;
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
