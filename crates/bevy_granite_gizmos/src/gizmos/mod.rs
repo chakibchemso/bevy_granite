@@ -75,6 +75,12 @@ impl GizmoOf {
 #[relationship_target(relationship = GizmoOf)]
 pub struct Gizmos(Vec<Entity>);
 
+impl Gizmos {
+    pub fn entities(&self) -> &[Entity] {
+        &self.0
+    }
+}
+
 use bevy_granite_core::EditorIgnore;
 pub use distance_scaling::scale_gizmo_by_camera_distance_system;
 pub use events::{

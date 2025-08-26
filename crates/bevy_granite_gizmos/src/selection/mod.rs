@@ -23,10 +23,17 @@ impl ActiveSelection {
             .send(SpawnGizmoEvent(ctx.entity));
     }
     fn on_remove(mut world: DeferredWorld, ctx: HookContext) {
-        world
-            .commands()
-            .entity(ctx.entity)
-            .despawn_related::<crate::gizmos::Gizmos>();
+        if let Ok(_entity_commands) = world.commands().get_entity(ctx.entity) {
+            if let Some(gizmos) = world.entity(ctx.entity).get::<crate::gizmos::Gizmos>() {
+                let targets: Vec<_> = gizmos.entities().iter().copied().collect();
+                let mut commands = world.commands();
+                for target in targets {
+                    if let Ok(mut target_commands) = commands.get_entity(target) {
+                        target_commands.despawn();
+                    }
+                }
+            }
+        }
     }
 }
 
