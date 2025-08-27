@@ -1,7 +1,7 @@
 use crate::interface::tabs::entity_editor::widgets::EntityRegisteredData;
 use bevy::{
     pbr::{MeshMaterial3d, StandardMaterial},
-    prelude::{Entity, Handle, Resource},
+    prelude::{Entity, Resource},
 };
 use bevy_granite_core::{IdentityData, TransformData};
 use bevy_granite_gizmos::DragState;

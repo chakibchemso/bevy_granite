@@ -1,8 +1,10 @@
-use super::widgets::{ EntityIdentityData, EntityRegisteredData, EntityGlobalTransformData,
-    MaterialTab
+use std::borrow::Cow;
+
+use super::widgets::{
+    EntityGlobalTransformData, EntityIdentityData, EntityRegisteredData, MaterialTab,
 };
 use bevy::prelude::Entity;
-use bevy_granite_core::{AvailableEditableMaterials, NewEditableMaterial, ComponentEditor};
+use bevy_granite_core::{AvailableEditableMaterials, ComponentEditor, NewEditableMaterial};
 
 #[derive(PartialEq, Clone)]
 pub struct EntityEditorTabData {
@@ -13,7 +15,7 @@ pub struct EntityEditorTabData {
     pub global_transform_data: EntityGlobalTransformData,
     pub registered_data: EntityRegisteredData,
     pub component_editor: Option<ComponentEditor>,
-    pub registered_type_names: Vec<String>, // Parity with the PostStartup bevy resource
+    pub registered_type_names: Vec<Cow<'static, str>>, // Parity with the PostStartup bevy resource
     pub material_builder_open: bool,
     pub material_to_build: NewEditableMaterial,
     pub surface_collapsed_state: bool,

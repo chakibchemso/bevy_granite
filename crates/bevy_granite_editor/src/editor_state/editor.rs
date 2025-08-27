@@ -19,16 +19,8 @@ use bevy_granite_logging::{
 };
 
 use crate::interface::RequestEditorToggle;
-use bevy::prelude::{Children, Commands, Entity, Query, With};
-use bevy_granite_gizmos::{
-    deselect_all_entities,
-    // despawn_rotate_gizmo, despawn_transform_gizmo,
-    ActiveSelection,
-    GizmoVisibilityState,
-    // RotateGizmo,
-    Selected,
-    // TransformGizmo,
-};
+use bevy::prelude::Commands;
+use bevy_granite_gizmos::{selection::events::EntityEvent, GizmoVisibilityState};
 
 // editor.rs
 // This has functions related to saving the editor settings
@@ -72,8 +64,8 @@ pub fn update_active_world_system(
 
     for WorldLoadSuccessEvent(path) in open_success_reader.read() {
         let rel_path = absolute_asset_to_rel(path.to_string());
-        editor_state.current_file = Some(rel_path.clone());
-        editor_state.loaded_sources.insert(rel_path.clone());
+        editor_state.current_file = Some(rel_path.to_string());
+        editor_state.loaded_sources.insert(rel_path.to_string());
         log!(
             LogType::Editor,
             LogLevel::Info,
@@ -86,7 +78,7 @@ pub fn update_active_world_system(
 
     for WorldSaveSuccessEvent(path) in world_save_success_reader.read() {
         let rel_path = absolute_asset_to_rel(path.to_string());
-        editor_state.loaded_sources.insert(rel_path.clone());
+        editor_state.loaded_sources.insert(rel_path.to_string());
         log!(
             LogType::Editor,
             LogLevel::Info,
@@ -99,8 +91,8 @@ pub fn update_active_world_system(
 
     for SetActiveWorld(path) in set_active_world_reader.read() {
         let rel_path = absolute_asset_to_rel(path.to_string());
-        editor_state.current_file = Some(rel_path.clone());
-        editor_state.loaded_sources.insert(rel_path.clone());
+        editor_state.current_file = Some(rel_path.to_string());
+        editor_state.loaded_sources.insert(rel_path.to_string());
         log!(
             LogType::Editor,
             LogLevel::Info,
@@ -117,16 +109,10 @@ pub fn update_editor_vis_system(
     mut editor_state: ResMut<EditorState>,
     mut gizmo_state: ResMut<GizmoVisibilityState>,
     mut commands: Commands,
-    selection: Query<Entity, With<Selected>>,
-    active_selection: Query<Entity, With<ActiveSelection>>,
-    // mut transform_gizmo_query: Query<(Entity, &TransformGizmo, &Children)>,
-    // mut rotate_gizmo_query: Query<(Entity, &RotateGizmo, &Children)>,
 ) {
     for RequestEditorToggle in toggle_reader.read() {
         // have to do it manually as watchers wont run when not active
-        deselect_all_entities(&mut commands, &selection, &active_selection);
-        // despawn_transform_gizmo(&mut commands, &mut transform_gizmo_query);
-        // despawn_rotate_gizmo(&mut commands, &mut rotate_gizmo_query);
+        commands.trigger(EntityEvent::DeselectAll);
 
         editor_state.active = !editor_state.active;
         gizmo_state.active = editor_state.active;

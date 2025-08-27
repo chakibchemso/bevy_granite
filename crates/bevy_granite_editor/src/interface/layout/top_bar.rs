@@ -17,13 +17,13 @@ use crate::{
     },
     UI_CONFIG,
 };
-use bevy::prelude::ResMut;
+use bevy::{ecs::system::Commands, prelude::ResMut};
 use bevy_egui::egui;
 use bevy_granite_core::{
     RequestDespawnBySource, RequestDespawnSerializableEntities, RequestLoadEvent, RequestSaveEvent,
     UserInput,
 };
-use bevy_granite_gizmos::RequestDeselectAllEntitiesEvent;
+use bevy_granite_gizmos::selection::events::EntityEvent;
 use native_dialog::FileDialog;
 
 pub fn top_bar_ui(
@@ -33,6 +33,7 @@ pub fn top_bar_ui(
     events: &mut EditorEvents,
     user_input: &UserInput,
     editor_state: &EditorState,
+    commands: &mut Commands,
 ) {
     let spacing = UI_CONFIG.spacing;
 
@@ -50,19 +51,19 @@ pub fn top_bar_ui(
                     {
                         events
                             .save
-                            .send(RequestSaveEvent(path.display().to_string()));
+                            .write(RequestSaveEvent(path.display().to_string()));
                     }
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if ui.button("Save (Ctrl + S)").clicked() {
                     let loaded = &editor_state.loaded_sources;
                     if !loaded.is_empty() {
-                        for (_index, source) in loaded.iter().enumerate() {
-                            events.save.send(RequestSaveEvent(source.to_string()));
+                        for source in loaded.iter() {
+                            events.save.write(RequestSaveEvent(source.to_string()));
                         }
                     }
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if ui.button("Open (Ctrl + O)").clicked() {
@@ -73,17 +74,17 @@ pub fn top_bar_ui(
                     {
                         events
                             .load
-                            .send(RequestLoadEvent(path.display().to_string()));
+                            .write(RequestLoadEvent(path.display().to_string()));
                     }
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 ui.separator();
 
                 ui.menu_button("Despawn", |ui| {
                     if ui.button("Despawn All Entities").clicked() {
-                        events.despawn_all.send(RequestDespawnSerializableEntities);
-                        ui.close_menu();
+                        events.despawn_all.write(RequestDespawnSerializableEntities);
+                        ui.close();
                     }
 
                     ui.separator();
@@ -102,8 +103,8 @@ pub fn top_bar_ui(
                             if ui.button(format!("{}", source)).clicked() {
                                 events
                                     .despawn_by_source
-                                    .send(RequestDespawnBySource(source));
-                                ui.close_menu();
+                                    .write(RequestDespawnBySource(source));
+                                ui.close();
                             }
                         }
                     }
@@ -114,16 +115,16 @@ pub fn top_bar_ui(
                 if ui.button("Open Default World").clicked() {
                     events
                         .load
-                        .send(RequestLoadEvent(editor_state.default_world.clone()));
-                    ui.close_menu();
+                        .write(RequestLoadEvent(editor_state.default_world.clone()));
+                    ui.close();
                 }
 
                 if ui.button("Save Default World").clicked() {
                     events
                         .save
-                        .send(RequestSaveEvent(editor_state.default_world.clone()));
+                        .write(RequestSaveEvent(editor_state.default_world.clone()));
 
-                    ui.close_menu();
+                    ui.close();
                 }
             });
             ui.menu_button("Panels", |ui| {
@@ -137,7 +138,7 @@ pub fn top_bar_ui(
                         data: Box::new(EntityEditorTabData::default()),
                     };
                     side_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if !side_dock
@@ -150,7 +151,7 @@ pub fn top_bar_ui(
                         data: Box::new(NodeTreeTabData::default()),
                     };
                     side_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if !side_dock
@@ -163,7 +164,7 @@ pub fn top_bar_ui(
                         data: Box::new(EditorSettingsTabData::default()),
                     };
                     side_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if !bottom_dock
@@ -176,7 +177,7 @@ pub fn top_bar_ui(
                         data: LogTabData::default(),
                     };
                     bottom_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
 
                 if !bottom_dock
@@ -189,7 +190,7 @@ pub fn top_bar_ui(
                         data: DebugTabData::default(),
                     };
                     bottom_dock.dock_state.push_to_focused_leaf(tab);
-                    ui.close_menu();
+                    ui.close();
                 }
             });
         });
@@ -200,42 +201,42 @@ pub fn top_bar_ui(
         ui.horizontal(|ui| {
             ui.separator();
             if ui.button("Show Help (H) ").clicked() {
-                events.popup.send(PopupMenuRequestedEvent {
+                events.popup.write(PopupMenuRequestedEvent {
                     popup: PopupType::Help,
                     mouse_pos: user_input.mouse_pos,
                 });
             }
             ui.separator();
             if ui.button("Add Entity (Shft + A) ").clicked() {
-                events.popup.send(PopupMenuRequestedEvent {
+                events.popup.write(PopupMenuRequestedEvent {
                     popup: PopupType::AddEntity,
                     mouse_pos: user_input.mouse_pos,
                 });
             }
             ui.separator();
             if ui.button("Parents (Shft + P) ").clicked() {
-                events.popup.send(PopupMenuRequestedEvent {
+                events.popup.write(PopupMenuRequestedEvent {
                     popup: PopupType::AddRelationship,
                     mouse_pos: user_input.mouse_pos,
                 });
             }
             ui.separator();
             if ui.button("Toggle Editor (F1) ").clicked() {
-                events.toggle_editor.send(RequestEditorToggle);
+                events.toggle_editor.write(RequestEditorToggle);
             }
 
             ui.separator();
             if ui.button("Toggle Camera Control (F2) ").clicked() {
-                events.toggle_cam_sync.send(RequestToggleCameraSync);
+                events.toggle_cam_sync.write(RequestToggleCameraSync);
             }
 
             ui.separator();
             if ui.button("Frame Active (F) ").clicked() {
-                events.frame.send(RequestCameraEntityFrame);
+                events.frame.write(RequestCameraEntityFrame);
             }
             ui.separator();
             if ui.button("Deselect All (U) ").clicked() {
-                events.deselect.send(RequestDeselectAllEntitiesEvent);
+                commands.trigger(EntityEvent::DeselectAll);
             }
             ui.separator();
         });

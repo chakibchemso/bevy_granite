@@ -6,7 +6,7 @@ use bevy::{
     ecs::{entity::Entity, system::Query},
     gizmos::gizmos::Gizmos,
     math::Vec3,
-    prelude::{Assets, Handle, Mesh, Res, With},
+    prelude::{Assets, Mesh, Res, With},
     render::mesh::Mesh3d,
     transform::components::GlobalTransform,
 };
@@ -30,7 +30,7 @@ pub fn show_active_selection_bounds_system(
     }
     let config = editor_state.config.viewport.visualizers;
     for (entity, transform, identity_data) in query.iter() {
-        match active_query.get_single() {
+        match active_query.single() {
             Ok(selected_entity) if selected_entity != entity => continue,
             Err(_) => return,
             _ => {}

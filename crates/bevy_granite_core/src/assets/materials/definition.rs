@@ -1,5 +1,4 @@
 use bevy::math::Affine2;
-use bevy::pbr::MeshMaterial3d;
 use bevy::prelude::{
     AlphaMode, AssetServer, Assets, Color, Handle, Image, Reflect, Res, ResMut, Resource,
     StandardMaterial,
@@ -193,8 +192,8 @@ impl EditableMaterial {
     pub fn is_empty(&self) -> bool {
         self.path.is_empty()
             || self.friendly_name.is_empty()
-            || self.friendly_name == "None".to_string()
-            || self.friendly_name == "Empty".to_string()
+            || self.friendly_name == "None"
+            || self.friendly_name == "Empty"
     }
 
     pub fn set_handle(&mut self, handle: Option<Handle<StandardMaterial>>) {
@@ -806,12 +805,12 @@ impl EditableMaterial {
         available_materials: &mut ResMut<AvailableEditableMaterials>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
         asset_server: &Res<AssetServer>,
-        fallback_name: &String,
-        fallback_path: &String,
+        fallback_name: &str,
+        fallback_path: &str,
     ) -> bool {
         let mut saved_new_material = false;
 
-        if *fallback_path == "".to_string() {
+        if fallback_path.is_empty() {
             return false;
         }
 
@@ -827,19 +826,16 @@ impl EditableMaterial {
                 fallback_path
             );
 
-            self.update_name(fallback_name.clone().to_lowercase());
-            self.update_path(fallback_path.clone().to_lowercase());
+            self.update_name(fallback_name.to_lowercase());
+            self.update_path(fallback_path.to_lowercase());
             self.save_to_file();
             saved_new_material = true;
         };
 
         // Ensure whatever material we have is a part of the scene
-        if let Some(material) = material_from_path_into_scene(
-            &mut self.path,
-            materials,
-            available_materials,
-            &asset_server,
-        ) {
+        if let Some(material) =
+            material_from_path_into_scene(&self.path, materials, available_materials, asset_server)
+        {
             *self = material;
         }
         saved_new_material
@@ -897,8 +893,8 @@ impl EditableMaterial {
 
         // Try to delete the file from disk
         if !self.path.is_empty() {
-            let abs_path = rel_asset_to_absolute(self.path.clone());
-            let file_path = abs_path;
+            let abs_path = rel_asset_to_absolute(&self.path);
+            let file_path = abs_path.to_string();
 
             if std::fs::metadata(&file_path).is_ok() {
                 match std::fs::remove_file(&file_path) {

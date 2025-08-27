@@ -28,7 +28,7 @@ pub fn watch_for_main_camera_addition(
     mut event_writer: EventWriter<MainCameraAdded>,
 ) {
     if !main_camera_added.is_empty() {
-        event_writer.send(MainCameraAdded);
+        event_writer.write(MainCameraAdded);
     }
 }
 

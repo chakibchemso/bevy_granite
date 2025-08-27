@@ -8,20 +8,20 @@ use bevy::{
 };
 
 use crate::GizmoCamera;
-use super::{GizmoParent, GizmoType, SelectedGizmo};
+use super::{GizmoChildren, GizmoType, SelectedGizmo};
 
 const DISTANCE_SCALING_ENABLED: bool = true;
 
 pub fn scale_gizmo_by_camera_distance_system(
     camera_q: Query<&GlobalTransform, With<GizmoCamera>>,
-    mut gizmo_q: Query<(&GlobalTransform, &mut Transform), With<GizmoParent>>,
+    mut gizmo_q: Query<(&GlobalTransform, &mut Transform), With<GizmoChildren>>,
     mut selected_gizmo: ResMut<SelectedGizmo>,
 ) {
     if !DISTANCE_SCALING_ENABLED {
         return;
     }
 
-    let Ok(cam_transform) = camera_q.get_single() else {
+    let Ok(cam_transform) = camera_q.single() else {
         return;
     };
 
@@ -38,13 +38,13 @@ pub fn scale_gizmo_by_camera_distance_system(
         let current_global_scale = gizmo_global_transform.to_scale_rotation_translation().0;
         let parent_scale_factor = current_global_scale / gizmo_transform.scale;
         let baseline_local_scale = Vec3::splat(1.0) / parent_scale_factor;
-        
+
         let distance = cam_transform
             .translation()
             .distance(gizmo_global_transform.translation());
 
         let base_scale = 0.35; // scale of gizmo's initially
-        let distance_scale = 0.08; // factor to scale via distance 
+        let distance_scale = 0.08; // factor to scale via distance
         let scale_factor = (distance * distance_scale).clamp(base_scale, 9.0); // 9.0 is max size of gizmo
         let final_scale = (base_scale * scale_factor).clamp(base_scale, f32::INFINITY);
 

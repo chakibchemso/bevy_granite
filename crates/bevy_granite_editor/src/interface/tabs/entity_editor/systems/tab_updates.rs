@@ -3,7 +3,10 @@ use crate::interface::{
         entity_cache::EntityUIDataCache, sync::update_identity_from_cache,
         update_components_from_cache, update_transform_from_cache,
     },
-    events::{MaterialDeleteEvent, UserUpdatedComponentsEvent, UserUpdatedIdentityEvent, UserUpdatedTransformEvent},
+    events::{
+        MaterialDeleteEvent, UserUpdatedComponentsEvent, UserUpdatedIdentityEvent,
+        UserUpdatedTransformEvent,
+    },
     panels::right_panel::{SideDockState, SideTab},
     tabs::entity_editor::EntityIdentityData,
 };
@@ -14,7 +17,9 @@ use bevy::ecs::{
     query::With,
     system::{Query, Res, ResMut},
 };
-use bevy_granite_core::{AvailableEditableMaterials, ComponentEditor, RegisteredTypeNames, entities::GraniteType};
+use bevy_granite_core::{
+    entities::GraniteType, AvailableEditableMaterials, ComponentEditor, RegisteredTypeNames,
+};
 use bevy_granite_gizmos::ActiveSelection;
 
 // Every frame we check the tab for staleness
@@ -35,35 +40,38 @@ pub fn update_entity_editor_tab_system(
             // Handle material deletion requests FIRST to avoid borrowing conflicts
             if data.material_delete_requested {
                 data.material_delete_requested = false;
-                
-                let current_path = if let Some(mat_data) = data.identity_data.class_data.get_material_data() {
-                    mat_data.current.path.clone()
-                } else {
-                    String::new()
-                };
-                
+
+                let current_path =
+                    if let Some(mat_data) = data.identity_data.class_data.get_material_data() {
+                        mat_data.current.path.clone()
+                    } else {
+                        String::new()
+                    };
+
                 if !current_path.is_empty() {
                     // Delete from disk and memory using a temporary clone
-                    let temp_material = if let Some(mat_data) = data.identity_data.class_data.get_material_data() {
-                        mat_data.current.clone()
-                    } else {
-                        continue;
-                    };
-                    
+                    let temp_material =
+                        if let Some(mat_data) = data.identity_data.class_data.get_material_data() {
+                            mat_data.current.clone()
+                        } else {
+                            continue;
+                        };
+
                     temp_material.delete_from_disk_and_memory(&mut available_materials);
-                    
+
                     // Reset current material to "None" (index 0)
                     if let Some(materials) = &available_materials.materials {
                         if !materials.is_empty() {
-                            if let Some(mat_data) = data.identity_data.class_data.get_mut_material_data() {
+                            if let Some(mat_data) =
+                                data.identity_data.class_data.get_mut_material_data()
+                            {
                                 *mat_data.current = materials[0].clone();
                                 *mat_data.path = materials[0].path.clone();
                             }
-                            
+
                             // Send deletion event to notify other systems
-                            material_delete_writer.send(MaterialDeleteEvent {
-                                path: current_path,
-                            });
+                            material_delete_writer
+                                .write(MaterialDeleteEvent { path: current_path });
                         }
                     }
                 }
@@ -89,7 +97,7 @@ pub fn update_entity_editor_tab_system(
             }
 
             if has_selected.is_some() {
-                if let Ok(single_entity) = active_entity.get_single_mut() {
+                if let Ok(single_entity) = active_entity.single_mut() {
                     *active = Some(single_entity);
                 }
             }

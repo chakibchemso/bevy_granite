@@ -13,13 +13,13 @@ use bevy_granite_gizmos::{ActiveSelection, GizmoMesh};
 
 pub fn relationship_line_system(
     mut gizmos: Gizmos<DebugRenderer>,
-    parent_query: Query<
+    child_query: Query<
         (Entity, &GlobalTransform, &ChildOf),
         (Without<GizmoMesh>, Without<IconProxy>),
     >,
     active_query: Query<Entity, With<ActiveSelection>>,
     transform_query: Query<&GlobalTransform>,
-    children_query: Query<&Children>,
+    parents_query: Query<&Children>,
     editor_state: Res<EditorState>,
 ) {
     if !editor_state.active {
@@ -34,8 +34,8 @@ pub fn relationship_line_system(
     let active_entities: Vec<Entity> = active_query.iter().collect();
 
     if !config.debug_selected_only {
-        for (_entity, transform, parent) in parent_query.iter() {
-            if let Ok(parent_transform) = transform_query.get(parent.get()) {
+        for (_entity, transform, child_of) in child_query.iter() {
+            if let Ok(parent_transform) = transform_query.get(child_of.parent()) {
                 let child_pos = transform.translation();
                 let parent_pos = parent_transform.translation();
                 let color = Color::srgb_from_array(config.debug_color);
@@ -57,17 +57,17 @@ pub fn relationship_line_system(
         let mut current = selected_entity;
         connected_entities.insert(current);
 
-        while let Ok((_, _, parent)) = parent_query.get(current) {
-            let parent_entity = parent.get();
+        while let Ok((_, _, child_of)) = child_query.get(current) {
+            let parent_entity = child_of.parent();
             connected_entities.insert(parent_entity);
             current = parent_entity;
         }
 
-        add_descendants(selected_entity, &children_query, &mut connected_entities);
+        add_descendants(selected_entity, &parents_query, &mut connected_entities);
     }
 
-    for (entity, transform, parent) in parent_query.iter() {
-        let parent_entity = parent.get();
+    for (entity, transform, child_of) in child_query.iter() {
+        let parent_entity = child_of.parent();
         if connected_entities.contains(&entity) || connected_entities.contains(&parent_entity) {
             if let Ok(parent_transform) = transform_query.get(parent_entity) {
                 let child_pos = transform.translation();

@@ -52,6 +52,6 @@ pub fn open_world_reader(
             path
         );
 
-        world_load_success_writer.send(WorldLoadSuccessEvent(path.to_string()));
+        world_load_success_writer.write(WorldLoadSuccessEvent(path.to_string()));
     }
 }

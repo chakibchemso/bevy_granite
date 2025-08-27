@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::entities::{is_bridge_component_check, ComponentEditor};
 use bevy::{
     ecs::reflect::AppTypeRegistry,
@@ -8,7 +10,7 @@ use bevy_granite_logging::{log, LogCategory, LogLevel, LogType};
 
 #[derive(Resource, Default)]
 pub struct RegisteredTypeNames {
-    pub names: Vec<String>,
+    pub names: Vec<Cow<'static, str>>,
 }
 
 pub fn gather_registered_types(
@@ -34,7 +36,7 @@ pub fn gather_registered_types(
     );
 }
 
-fn get_bridge_reflect_component_names(type_registry: &TypeRegistry) -> Vec<String> {
+fn get_bridge_reflect_component_names(type_registry: &TypeRegistry) -> Vec<Cow<'static, str>> {
     type_registry
         .iter()
         .filter(|registration| {
@@ -42,7 +44,7 @@ fn get_bridge_reflect_component_names(type_registry: &TypeRegistry) -> Vec<Strin
                 is_bridge_component_check(registration)
             }
         })
-        .map(|registration| registration.type_info().type_path().to_string())
+        .map(|registration| registration.type_info().type_path().into())
         .collect()
 }
 
@@ -62,7 +64,7 @@ pub fn setup_component_editor(
 /// this will return all the bevy componets that should be accessible in the editor
 /// this is a big hack for now because I just need one componet and cant be fucked making a proper dynamic implementation
 /// this whole approch will need to be redone in the future - Use Cow<'static str> FFS
-fn get_bevy_reflect_component_names(type_registry: &TypeRegistry) -> Vec<String> {
+fn get_bevy_reflect_component_names(type_registry: &TypeRegistry) -> Vec<Cow<'static, str>> {
     vec![type_registry
         .get(std::any::TypeId::of::<
             bevy::core_pipeline::tonemapping::Tonemapping,
@@ -70,5 +72,5 @@ fn get_bevy_reflect_component_names(type_registry: &TypeRegistry) -> Vec<String>
         .expect("Tonemapping to be registered")
         .type_info()
         .type_path()
-        .to_string()]
+        .into()]
 }

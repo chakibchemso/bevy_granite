@@ -1,11 +1,14 @@
-use bevy_egui::egui::{self};
+use bevy_egui::egui::{self, Popup};
 use bevy_granite_core::{AvailableEditableMaterials, EditableMaterial, ReflectedComponent};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
 use egui::{Align2, Rect, Response, Shape, Stroke, Ui, Vec2};
-use std::collections::{HashMap, HashSet};
+use std::{
+    borrow::Cow,
+    collections::{HashMap, HashSet},
+};
 
 // Generic trait for items that can be displayed in selectors
 trait SelectableItem {
@@ -15,6 +18,28 @@ trait SelectableItem {
 }
 
 impl SelectableItem for String {
+    fn display_name(&self) -> &str {
+        if let Some(last_separator) = self.rfind("::") {
+            &self[last_separator + 2..]
+        } else {
+            self
+        }
+    }
+
+    fn search_text(&self) -> String {
+        self.to_lowercase()
+    }
+
+    fn group_key(&self) -> String {
+        if let Some(last_separator) = self.rfind("::") {
+            self[..last_separator].to_string()
+        } else {
+            "Root".to_string()
+        }
+    }
+}
+
+impl SelectableItem for Cow<'static, str> {
     fn display_name(&self) -> &str {
         if let Some(last_separator) = self.rfind("::") {
             &self[last_separator + 2..]
@@ -50,7 +75,7 @@ impl SelectableItem for EditableMaterial {
     }
 
     fn group_key(&self) -> String {
-        if self.path == "" || self.path == "None" {
+        if self.path.is_empty() || self.path == "None" {
             "materials/internal".to_string()
         } else if let Some(last_separator) = self.path.rfind('/') {
             self.path[..last_separator].to_string()
@@ -73,7 +98,7 @@ fn generic_selector_popup<T: SelectableItem>(
 ) -> bool {
     let mut popup_changed = false;
 
-    if ui.memory(|mem| mem.is_popup_open(popup_id)) {
+    if Popup::is_id_open(ui.ctx(), popup_id) {
         ui.memory_mut(|mem| mem.keep_popup_open(popup_id));
         let popup_pos = button_response.rect.left_bottom() + egui::vec2(0.0, 4.0);
 
@@ -110,7 +135,7 @@ fn generic_selector_popup<T: SelectableItem>(
 
             if let Some(pointer_pos) = ui.input(|i| i.pointer.interact_pos()) {
                 if !popup_rect.contains(pointer_pos) && !button_rect.contains(pointer_pos) {
-                    ui.memory_mut(|mem| mem.close_popup(popup_id));
+                    Popup::close_id(ui.ctx(), popup_id);
                 }
             }
         }
@@ -156,7 +181,7 @@ fn render_popup_content<T: SelectableItem>(
     for item in filtered_items.iter() {
         grouped_items
             .entry(item.group_key())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(*item);
     }
 
@@ -310,11 +335,11 @@ fn handle_popup_button(
 ) -> egui::Response {
     let button_response = combobox_style_button(ui, button_text);
     if button_response.clicked() {
-        let is_open = ui.memory(|mem| mem.is_popup_open(popup_id));
+        let is_open = Popup::is_id_open(ui.ctx(), popup_id);
         if is_open {
-            ui.memory_mut(|mem| mem.close_popup(popup_id));
+            Popup::close_id(ui.ctx(), popup_id);
         } else {
-            ui.memory_mut(|mem| mem.open_popup(popup_id));
+            Popup::open_id(ui.ctx(), popup_id);
             search_filter.clear();
         }
     }
@@ -325,21 +350,21 @@ fn handle_popup_button(
 pub fn component_selector_combo(
     ui: &mut egui::Ui,
     search_filter: &mut String,
-    registered_type_names: Vec<String>,
+    registered_type_names: Vec<Cow<'static, str>>,
     existing_components: &[ReflectedComponent],
     component_changed: &mut bool,
     registered_add_request: &mut Option<String>,
 ) -> bool {
     let popup_id = egui::Id::new("component_selector_popup");
 
-    let existing_type_names: HashSet<&String> = existing_components
+    let existing_type_names: HashSet<Cow<'static, str>> = existing_components
         .iter()
-        .map(|comp| &comp.type_name)
+        .map(|comp| comp.type_name.clone())
         .collect();
 
     let available_components: Vec<_> = registered_type_names
         .iter()
-        .filter(|name| !existing_type_names.contains(name))
+        .filter(|name| !existing_type_names.contains(name.as_ref()))
         .cloned()
         .collect();
 
@@ -360,14 +385,14 @@ pub fn component_selector_combo(
         "component",
         "All registered components are already on this entity",
         "No components match your search",
-        |ui, component_name: &String| {
+        |ui, component_name: &Cow<'static, str>| {
             if ui
                 .selectable_label(false, component_name.display_name())
                 .clicked()
             {
                 *component_changed = true;
-                *registered_add_request = Some((*component_name).clone());
-                ui.memory_mut(|mem| mem.close_popup(popup_id));
+                *registered_add_request = Some(component_name.to_string());
+                Popup::close_id(ui.ctx(), popup_id);
                 return true;
             }
             false
@@ -428,7 +453,7 @@ pub fn material_selector_combo(
                         new_material.friendly_name
                     );
 
-                    ui.memory_mut(|mem| mem.close_popup(popup_id));
+                    Popup::close_id(ui.ctx(), popup_id);
                     return true;
                 }
                 false

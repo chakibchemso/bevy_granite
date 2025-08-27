@@ -11,7 +11,10 @@ use crate::{
     },
 };
 
-use bevy::prelude::{Res, ResMut};
+use bevy::{
+    ecs::system::Commands,
+    prelude::{Res, ResMut},
+};
 use bevy_egui::{egui, EguiContexts};
 use bevy_granite_core::UserInput;
 use egui_dock::DockArea;
@@ -50,6 +53,7 @@ pub fn dock_ui_system(
     mut events: EditorEvents,
     editor_state: Res<EditorState>,
     user_input: Res<UserInput>,
+    mut commands: Commands,
 ) {
     let ctx = contexts.ctx_mut().expect("Egui context to exist");
     let screen_rect = ctx.screen_rect();
@@ -64,7 +68,7 @@ pub fn dock_ui_system(
     egui::TopBottomPanel::top("tool_panel")
         .resizable(false)
         .show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 top_bar_ui(
                     &mut side_dock,
                     &mut bottom_dock,
@@ -72,11 +76,12 @@ pub fn dock_ui_system(
                     &mut events,
                     &user_input,
                     &editor_state,
+                    &mut commands,
                 );
             });
         });
 
-    let side_panel_position = editor_state.config.dock.side_panel_position.clone();
+    let side_panel_position = editor_state.config.dock.side_panel_position;
     match side_panel_position {
         SidePanelPosition::Left => {
             egui::SidePanel::left("left_dock_panel")

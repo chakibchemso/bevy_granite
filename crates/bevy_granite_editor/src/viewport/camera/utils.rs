@@ -9,8 +9,7 @@ use bevy::{
     },
     render::view::RenderLayers,
 };
-use bevy_granite_core::{TreeHiddenEntity, UICamera, UserInput};
-use bevy_granite_gizmos::utils::EditorIgnore;
+use bevy_granite_core::{EditorIgnore, TreeHiddenEntity, UICamera, UserInput};
 
 pub fn add_ui_camera(mut commands: Commands) {
     let context = bevy_egui::EguiContext::default();
@@ -26,7 +25,7 @@ pub fn add_ui_camera(mut commands: Commands) {
                 should_block_lower: false,
                 is_hoverable: false,
             },
-            EditorIgnore, // This camera should not be selectable in the editor
+            EditorIgnore::PICKING, // This camera should not be selectable in the editor
         ))
         .insert(Camera {
             order: 2,
@@ -127,11 +126,13 @@ pub fn handle_zoom(
     target_pos: &mut ResMut<CameraTarget>,
 ) {
     let zoom_speed = INPUT_CONFIG.zoom_camera_sensitivity;
+    let clip_distance = INPUT_CONFIG.zoom_clip_distance;
 
     for event in mouse_wheel_events.read() {
         for mut transform in query.iter_mut() {
             let direction = (target_pos.position - transform.translation).normalize();
-            let zoom_amount = event.y * zoom_speed;
+            let max_distance = target_pos.position.distance(transform.translation) - clip_distance;
+            let zoom_amount = (event.y * zoom_speed).min(max_distance);
 
             transform.translation += direction * zoom_amount;
         }

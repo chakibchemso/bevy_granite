@@ -1,11 +1,9 @@
 use super::{
-    apply_pending_parents, deselect_all_entities_watcher, deselect_entity_watcher,
-    duplicate_all_selection_system, duplicate_entity_system, handle_entity_selection,
-    select_entity_range_watcher, select_entity_watcher, RaycastCursorLast, RaycastCursorPos,
-    RequestDeselectAllEntitiesEvent, RequestDeselectEntityEvent, RequestDuplicateAllSelectionEvent,
-    RequestDuplicateEntityEvent, RequestSelectEntityEvent, RequestSelectEntityRangeEvent,
+    apply_pending_parents, duplicate_all_selection_system, duplicate_entity_system,
+    handle_picking_selection, select_entity, RaycastCursorLast, RaycastCursorPos,
+    RequestDuplicateAllSelectionEvent, RequestDuplicateEntityEvent,
 };
-use crate::is_gizmos_active;
+use crate::{is_gizmos_active, selection::manager::deselect_entity};
 use bevy::{
     app::{App, Plugin, PostUpdate, Update},
     ecs::schedule::IntoScheduleConfigs,
@@ -19,12 +17,8 @@ impl Plugin for SelectionPlugin {
             //
             // Events
             //
-            .add_event::<RequestSelectEntityEvent>()
-            .add_event::<RequestSelectEntityRangeEvent>()
-            .add_event::<RequestDeselectEntityEvent>()
             .add_event::<RequestDuplicateEntityEvent>()
             .add_event::<RequestDuplicateAllSelectionEvent>()
-            .add_event::<RequestDeselectAllEntitiesEvent>()
             //
             // Resources
             //
@@ -43,17 +37,15 @@ impl Plugin for SelectionPlugin {
             .add_systems(
                 Update,
                 (
-                    select_entity_watcher,
-                    select_entity_range_watcher,
-                    deselect_all_entities_watcher,
-                    deselect_entity_watcher,
-                    duplicate_entity_system.after(handle_entity_selection),
-                    duplicate_all_selection_system.after(handle_entity_selection),
+                    duplicate_entity_system.after(handle_picking_selection),
+                    duplicate_all_selection_system.after(handle_picking_selection),
                 )
                     .run_if(is_gizmos_active),
             )
             .add_systems(PostUpdate, (apply_pending_parents).run_if(is_gizmos_active))
-            .add_observer(handle_entity_selection)
-            .add_observer(super::manager::single_active_observer);
+            .add_observer(handle_picking_selection)
+            .add_observer(super::manager::single_active)
+            .add_observer(select_entity)
+            .add_observer(deselect_entity);
     }
 }

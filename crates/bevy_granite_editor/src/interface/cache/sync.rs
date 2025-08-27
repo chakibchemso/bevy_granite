@@ -1,13 +1,13 @@
-
+use bevy::ecs::{event::EventWriter, system::ResMut};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
-use bevy::ecs::{event::EventWriter, system::ResMut};
 
 use crate::interface::{
     cache::entity_cache::EntityUIDataCache,
-    events::{UserUpdatedComponentsEvent, UserUpdatedIdentityEvent, UserUpdatedTransformEvent}, tabs::entity_editor::{EntityIdentityData, EntityRegisteredData, EntityGlobalTransformData},
+    events::{UserUpdatedComponentsEvent, UserUpdatedIdentityEvent, UserUpdatedTransformEvent},
+    tabs::entity_editor::{EntityGlobalTransformData, EntityIdentityData, EntityRegisteredData},
 };
 //
 // INFO:
@@ -77,7 +77,11 @@ pub fn update_transform_from_cache(
 
     // Only send events if the UI data actually changed
     if global_transform_data.transform_data_changed {
-        send_transform_events_from_ui_change(global_transform_data, cache, transform_updated_writer);
+        send_transform_events_from_ui_change(
+            global_transform_data,
+            cache,
+            transform_updated_writer,
+        );
     }
 }
 
@@ -113,7 +117,7 @@ pub fn send_component_events_from_ui_change(
     components_updated_writer: &mut EventWriter<UserUpdatedComponentsEvent>,
 ) {
     if let Some(entity) = cache.data.entity {
-        components_updated_writer.send(UserUpdatedComponentsEvent {
+        components_updated_writer.write(UserUpdatedComponentsEvent {
             entity,
             data: registered_data.clone(),
         });
@@ -132,7 +136,7 @@ pub fn send_transform_events_from_ui_change(
 ) {
     if global_transform_data.transform_data_changed {
         if let Some(entity) = cache.data.entity {
-            transform_updated_writer.send(UserUpdatedTransformEvent {
+            transform_updated_writer.write(UserUpdatedTransformEvent {
                 entity,
                 data: global_transform_data.clone(),
             });
@@ -157,7 +161,7 @@ pub fn send_identity_events_from_ui_change(
                 "Identity data changed"
             );
 
-            identity_updated_writer.send(UserUpdatedIdentityEvent {
+            identity_updated_writer.write(UserUpdatedIdentityEvent {
                 entity,
                 data: identity_data.clone(),
             });

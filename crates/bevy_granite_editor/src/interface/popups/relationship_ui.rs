@@ -26,7 +26,7 @@ pub fn relationship_ui(
         // call this to ensure the window is not transparent when theme transparency is selected
         .frame(make_frame_solid_via_context(
             egui::Frame::window(&contexts.ctx_mut().expect("Egui context to exist").style()),
-            &contexts.ctx_mut().expect("Egui context to exist"),
+            contexts.ctx_mut().expect("Egui context to exist"),
         ))
         .show(contexts.ctx_mut().expect("Egui context to exist"), |ui| {
             ui.vertical(|ui| {
@@ -35,16 +35,16 @@ pub fn relationship_ui(
                 ui.add_space(spacing);
 
                 if ui.button("Set as Parent").clicked() {
-                    events.parent.send(RequestNewParent);
+                    events.parent.write(RequestNewParent);
                     should_close = true;
                 }
 
                 if ui.button("Remove Parent").clicked() {
-                    events.remove_parent.send(RequestRemoveParents);
+                    events.remove_parent.write(RequestRemoveParents);
                     should_close = true;
                 }
                 if ui.button("Remove Children").clicked() {
-                    events.remove_children.send(RequestRemoveChildren);
+                    events.remove_children.write(RequestRemoveChildren);
                     should_close = true;
                 }
 

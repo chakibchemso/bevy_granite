@@ -31,10 +31,10 @@ pub use assets::{
 };
 pub use bevy_granite_macros::register_editor_components;
 pub use entities::{
-    BridgeTag, Camera3D, ClassCategory, ComponentEditor, DirLight, GraniteEditorSerdeEntity,
-    GraniteType, GraniteTypes, HasRuntimeData, IdentityData, MainCamera, MaterialNameSource,
-    NeedsTangents, PointLightData, PromptData, PromptImportSettings, RectBrush, ReflectedComponent,
-    SpawnSource, TransformData, TreeHiddenEntity, UICamera, VolumetricFog, OBJ,
+    BridgeTag, Camera3D, ClassCategory, ComponentEditor, DirLight, EditorIgnore,
+    GraniteEditorSerdeEntity, GraniteType, GraniteTypes, HasRuntimeData, IdentityData, MainCamera,
+    MaterialNameSource, NeedsTangents, PointLightData, PromptData, PromptImportSettings, RectBrush,
+    ReflectedComponent, SpawnSource, TransformData, TreeHiddenEntity, UICamera, VolumetricFog, OBJ,
 };
 pub use events::{
     CollectRuntimeDataEvent, RequestDespawnBySource, RequestDespawnSerializableEntities,

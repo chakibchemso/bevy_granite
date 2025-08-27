@@ -27,8 +27,8 @@ fn preload_fallback_material(
         &mut available_materials,
         &mut materials,
         &asset_server,
-        &String::new(),
-        &String::new(),
+        "",
+        "",
     );
 
     if let Some(ref mut materials) = available_materials.materials {

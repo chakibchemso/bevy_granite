@@ -1,6 +1,7 @@
-use bevy::asset::Handle;
+use bevy::asset::{weak_handle, Handle};
 use bevy::ecs::hierarchy::ChildOf;
 use bevy::pbr::MeshMaterial3d;
+use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use bevy::picking::Pickable;
 use bevy::prelude::{AlphaMode, Meshable, Quat, Sphere};
 use bevy::prelude::{
@@ -8,22 +9,13 @@ use bevy::prelude::{
     ResMut, Resource, StandardMaterial, Transform, Vec3, Visibility, Without,
 };
 use bevy::render::mesh::Mesh3d;
-use bevy::{
-    pbr::{NotShadowCaster, NotShadowReceiver},
-    render::view::RenderLayers,
-};
 use bevy_granite_logging::{
     config::{LogCategory, LogLevel, LogType},
     log,
 };
 
-use crate::gizmos::rotate::gizmo;
 use crate::gizmos::GizmoOf;
-use crate::{
-    gizmos::{GizmoMesh, GizmoParent},
-    input::GizmoAxis,
-    selection::manager::ParentTo,
-};
+use crate::{gizmos::GizmoMesh, input::GizmoAxis};
 
 #[derive(Component)]
 pub struct RotateGizmo;
@@ -39,7 +31,7 @@ pub struct PreviousTransformGizmo {
 const GIZMO_SCALE: f32 = 0.9;
 const ROTATE_INNER_RADIUS: f32 = 0.12 * GIZMO_SCALE; // middle sphere of gizmo (free rotate)
 const ROTATE_VISUAL_RADIUS: f32 = 0.64 * GIZMO_SCALE; // middle sphere of gizmo (visual)
-const RING_MESH_HASH: u128 = 12345678901234567890; // doesnt matter the value
+const RING_MESH_HASH: &str = "3f6f4c2a-6e36-4ccf-81c4-f343f83c5f80"; // constantly random - doesnt matter the value
 
 pub fn register_embedded_rotate_gizmo_mesh(mut meshes: ResMut<Assets<Mesh>>) {
     let handle = get_mesh_handle();
@@ -51,7 +43,7 @@ pub fn register_embedded_rotate_gizmo_mesh(mut meshes: ResMut<Assets<Mesh>>) {
 }
 
 pub fn get_mesh_handle() -> Handle<Mesh> {
-    Handle::<Mesh>::weak_from_u128(RING_MESH_HASH)
+    weak_handle!(RING_MESH_HASH)
 }
 pub fn spawn_rotate_gizmo(
     parent: Entity,
@@ -96,11 +88,9 @@ pub fn spawn_rotate_gizmo(
                 GizmoOf(parent),
                 ChildOf(parent),
             ))
-            .insert(RenderLayers::layer(14)) // 14 is our UI/Gizmo layer.
             .insert(Name::new("RotateGizmo"))
             .insert(RotateGizmo)
             .insert(RotateGizmoParent)
-            .insert(GizmoParent)
             .id();
 
         // commands.entity(gizmo_entity).insert(ParentTo(parent));
@@ -164,7 +154,7 @@ pub fn despawn_rotate_gizmo(
     query: &mut Query<(Entity, &RotateGizmo, &Children)>,
 ) {
     for (entity, _, _) in query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
         log!(
             LogType::Editor,
             LogLevel::Info,
@@ -200,7 +190,6 @@ fn build_free_sphere(
             NotShadowCaster,
             NotShadowReceiver,
             Name::new("Gizmo Rotate Sphere"),
-            RenderLayers::layer(14), // 14 is our UI/Gizmo layer.
             axis,
             RotateGizmo,
             GizmoMesh,
@@ -254,7 +243,6 @@ fn build_axis_ring<const C: char>(
             NotShadowCaster,
             NotShadowReceiver,
             Name::new("Gizmo Rotate Ring"),
-            RenderLayers::layer(14), // 14 is our UI/Gizmo layer.
             gizmo_axis,
             RotateGizmo,
             GizmoMesh,

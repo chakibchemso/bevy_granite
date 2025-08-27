@@ -87,7 +87,7 @@ fn main() {
 fn setup(mut open_event: EventWriter<RequestLoadEvent>) {
     // Event to load a world (.scene)
     // When finished loading it will send a `WorldLoadSuccessEvent` with the loaded world str name
-    open_event.send(RequestLoadEvent(STARTING_WORLD.to_string()));
+    open_event.write(RequestLoadEvent(STARTING_WORLD.to_string()));
 }
 ```
 
@@ -237,4 +237,3 @@ Any contributions by you, shall be dual licensed as above, without any additiona
  - Silas
  - Ethan
  - Max
-
